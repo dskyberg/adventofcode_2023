@@ -1,17 +1,19 @@
+use std::cmp::max;
+
 use regex::Regex;
 
 #[derive(Debug)]
 struct GameHand {
-    red: Option<usize>,
-    blue: Option<usize>,
-    green: Option<usize>,
+    red: usize,
+    blue: usize,
+    green: usize,
 }
 impl GameHand {
     pub fn new() -> Self {
         Self {
-            red: None,
-            blue: None,
-            green: None,
+            red: 0,
+            blue: 0,
+            green: 0,
         }
     }
 }
@@ -19,14 +21,14 @@ impl GameHand {
 impl std::fmt::Display for GameHand {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut result: Vec<String> = Vec::new();
-        if let Some(count) = &self.red {
-            result.push(format!("{} red", count))
+        if self.red > 0 {
+            result.push(format!("{} red", self.red))
         }
-        if let Some(count) = &self.blue {
-            result.push(format!("{} blue", count))
+        if self.blue > 0 {
+            result.push(format!("{} blue", self.blue))
         }
-        if let Some(count) = &self.green {
-            result.push(format!("{} green", count))
+        if self.green > 0 {
+            result.push(format!("{} green", self.green))
         }
         write!(f, "{}", result.join(", "))
     }
@@ -44,9 +46,9 @@ impl TryFrom<&str> for GameHand {
 
             let count = caps["count"].parse::<usize>().map_err(|e| e.to_string())?;
             match &caps["color"] {
-                "red" => hand.red = Some(count),
-                "blue" => hand.blue = Some(count),
-                "green" => hand.green = Some(count),
+                "red" => hand.red = count,
+                "blue" => hand.blue = count,
+                "green" => hand.green = count,
                 _ => return Err(format!("Unknown color:v {}", &caps["color"])),
             }
         }
@@ -74,6 +76,22 @@ impl Game {
             }
         }
         true
+    }
+
+    pub fn min_cubes(&self) -> GameHand {
+        let mut red = 0;
+        let mut blue = 0;
+        let mut green = 0;
+        for hand in &self.hands {
+            red = max(red, hand.red);
+            blue = max(blue, hand.blue);
+            green = max(green, hand.green);
+        }
+        GameHand { red, blue, green }
+    }
+    pub fn power(&self) -> usize {
+        let mins = self.min_cubes();
+        mins.red * mins.blue * mins.green
     }
 }
 
@@ -118,18 +136,12 @@ impl TryFrom<&str> for Game {
     }
 }
 
-fn part_one(lines: &Vec<&str>) -> Result<(), String> {
-    let mut games: Vec<Game> = Vec::new();
-    for line in lines {
-        games.push(Game::try_from(*line)?);
-    }
-
+fn part_one(games: &Vec<Game>) -> Result<(), String> {
     // Compare to
     let compare_to = GameHand::try_from("12 red, 13 green, 14 blue").expect("Failed bad!!");
     let mut total = 0;
-    for game in &games {
+    for game in games {
         if game.possible(&compare_to) {
-            println!("Game {} fits", &game.count);
             total += game.count;
         }
     }
@@ -137,17 +149,32 @@ fn part_one(lines: &Vec<&str>) -> Result<(), String> {
     Ok(())
 }
 
-fn part_two(_lines: &Vec<&str>) -> Result<(), String> {
-    println!("Part Two: ");
+fn part_two(games: &Vec<Game>) -> Result<(), String> {
+    let mut result = 0usize;
+    for game in games {
+        let power = game.power();
+        result += power;
+    }
+    println!("Part Two: {}", result);
     Ok(())
 }
 
+use std::io::Write;
 fn main() -> Result<(), String> {
     let lines = include_str!("../../data/day_2.txt")
         .split('\n')
         .collect::<Vec<&str>>();
-    part_one(&lines)?;
-    part_two(&lines)?;
+    let mut games: Vec<Game> = Vec::new();
+    print!("Parsing games...");
+    let _ = std::io::stdout().flush();
+    for line in lines {
+        games.push(Game::try_from(line)?);
+    }
+    println!(" done!");
+    // 2685
+    part_one(&games)?;
+    // 83707
+    part_two(&games)?;
     Ok(())
 }
 
@@ -165,6 +192,6 @@ mod tests {
     fn test_game() {
         let hands = " Game 12: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red ";
         let game = Game::try_from(hands).expect("failed");
-        println!("{}", &game);
+        println!("{}", &game.min_cubes());
     }
 }
