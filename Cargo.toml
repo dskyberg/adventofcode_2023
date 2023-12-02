@@ -1,0 +1,14 @@
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+resolver = "2"
+members = ["day_1"]
+
+[workspace.package]
+name = "adventofcode_2023"
+version = "0.1.0"
+edition = "2021"
+authors = ["David Skyberg <daviskyberg@gmail.com>"]
+license = "MIT"
