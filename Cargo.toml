@@ -4,7 +4,7 @@
 
 [workspace]
 resolver = "2"
-members = ["day_1"]
+members = ["day_1", "day_2"]
 
 [workspace.package]
 name = "adventofcode_2023"
