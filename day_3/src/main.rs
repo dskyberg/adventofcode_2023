@@ -1,3 +1,13 @@
+/// Create an inclusive range that is row +/- 1, handling negatives.
+/// Example: r
+/// for row == 0: 0..=1
+/// for row == 1: 0..=2
+/// for row == 2: 1..3
+fn usize_range(row: usize) -> std::ops::RangeInclusive<usize> {
+    let lower = max(row as isize - 1, 0) as usize;
+    lower..=row + 1
+}
+
 #[derive(Debug)]
 struct Point {
     pub x: usize,
@@ -9,7 +19,14 @@ impl Point {
     }
 
     pub fn within_bounds(&self, x1: usize, y1: usize, x2: usize, y2: usize) -> bool {
-        self.x >= x1 && self.x <= x2 && self.y >= y1 && self.y <= y2
+        (x1..=x2).contains(&self.x) && (y1..=y2).contains(&self.y)
+        //self.x >= x1 && self.x <= x2 && self.y >= y1 && self.y <= y2
+    }
+
+    /// Generate an inclusive range of self.y +/- 1
+    /// This is used to filter the Vec of symbols and numbers later
+    pub fn y_range(&self) -> RangeInclusive<usize> {
+        usize_range(self.y)
     }
 }
 
@@ -20,7 +37,7 @@ struct Number {
     pub end: Point,
 }
 
-use std::cmp::max;
+use std::{cmp::max, ops::RangeInclusive};
 
 impl Number {
     /// Effectively returns the number of digits in this number.
@@ -40,7 +57,14 @@ impl Number {
 
 #[derive(Debug)]
 struct Symbol {
+    pub value: char,
     pub location: Point,
+}
+
+impl Symbol {
+    fn is_gear(&self) -> bool {
+        self.value == '*'
+    }
 }
 
 #[derive(Debug)]
@@ -65,7 +89,11 @@ impl Schematics {
     }
 
     pub fn symbol_adjacent(&self, number: &Number) -> bool {
-        for symbol in &self.symbols {
+        for symbol in self
+            .symbols
+            .iter()
+            .filter(|s| number.start.y_range().contains(&s.location.y))
+        {
             if number.adjacent(&symbol.location) {
                 return true;
             }
@@ -82,6 +110,27 @@ impl Schematics {
             }
         }
         result
+    }
+
+    /// See if 2 numbers touch a gear
+    fn find_gears(&self) -> Result<Vec<Vec<usize>>, String> {
+        let mut number_pairs: Vec<Vec<usize>> = Vec::new();
+        for symbol in self.symbols.iter().filter(|s| s.is_gear()) {
+            let mut numbers: Vec<usize> = Vec::new();
+            for number in self
+                .numbers
+                .iter()
+                .filter(|number| symbol.location.y_range().contains(&number.start.y))
+            {
+                if number.adjacent(&symbol.location) {
+                    numbers.push(number.value)
+                }
+            }
+            if numbers.len() == 2 {
+                number_pairs.push(numbers);
+            }
+        }
+        Ok(number_pairs)
     }
 }
 
@@ -128,9 +177,9 @@ fn read_schematic(data: &[u8]) -> Result<Schematics, String> {
             continue;
         }
         // Looks like a symbol
-        let _value = data[cursor] as char;
+        let value = data[cursor] as char;
         let location = Point::new(x, y);
-        let symbol = Symbol { location };
+        let symbol = Symbol { value, location };
         schematics.push_symbol(symbol);
         x += 1;
         cursor += 1;
@@ -138,12 +187,26 @@ fn read_schematic(data: &[u8]) -> Result<Schematics, String> {
     Ok(schematics)
 }
 
+//test: 4361, actual 544433
 fn part_one(schematics: &Schematics) -> Result<(), String> {
     let parts = schematics.find_parts();
     let total: usize = parts.iter().sum();
 
-    //println!("{:?}", &parts);
-    println!("Total: {}", total);
+    println!("Part One: {}", total);
+    Ok(())
+}
+
+/// 76314915
+fn part_two(schematics: &Schematics) -> Result<(), String> {
+    let gears = schematics.find_gears()?;
+    let mut total = 0;
+    for pair in gears {
+        if pair.len() != 2 {
+            return Err("Wrong number of gears".to_string());
+        }
+        total += pair[0] * pair[1];
+    }
+    println!("Part Two: {}", total);
     Ok(())
 }
 
@@ -151,6 +214,7 @@ fn main() -> Result<(), String> {
     let data = include_bytes!("../../data/day_3.txt");
     let schematics = read_schematic(data)?;
     part_one(&schematics)?;
+    part_two(&schematics)?;
     Ok(())
 }
 
@@ -163,5 +227,12 @@ mod tests {
         let data = "467$..114..".as_bytes();
         let schematic = read_schematic(data).expect("Fail");
         println!("{:?}", &schematic);
+    }
+
+    #[test]
+    fn test_row_range() {
+        assert_eq!(usize_range(0), 0..=1);
+        assert_eq!(usize_range(1), 0..=2);
+        assert_eq!(usize_range(2), 1..=3);
     }
 }
