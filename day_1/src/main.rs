@@ -43,13 +43,13 @@ fn starts_with(value: &Vec<char>, target: &Vec<char>) -> bool {
 
 /// Turn number words into digits.  So, 'one' becomes '1', etc.
 /// WARNING!!  'eightwo' should become '82', not '8wo'.
-fn replace_words(in_row: &str, words: &Vec<Vec<char>>) -> Result<String, String> {
+fn replace_words(in_row: &str, words: &[Vec<char>]) -> Result<String, String> {
     let mut row_vec = in_row.chars().collect::<Vec<char>>();
     let mut result = Vec::<char>::new();
 
     while !row_vec.is_empty() {
         let mut found = false;
-        for word_idx in 0..words.len() {
+        for (word_idx, _) in words.iter().enumerate() {
             if starts_with(&row_vec, &words[word_idx]) {
                 let val = char::from_digit(word_idx as u32, 10).unwrap();
                 result.push(val);
