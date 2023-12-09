@@ -25,9 +25,9 @@ struct MappingRangeDestination {
 }
 
 pub fn generator(input: &str) -> Input {
-    let seeds_pattern = Regex::new(r#"^seeds: ([\d ]*)$"#).unwrap();
-    let mapping_header_pattern = Regex::new(r#"^(\w+)-to-(\w+) map:$"#).unwrap();
-    let mapping_pattern = Regex::new(r#"^(\d+) (\d+) (\d+)$"#).unwrap();
+    let seeds_pattern = Regex::new(r"^seeds: ([\d ]*)$").unwrap();
+    let mapping_header_pattern = Regex::new(r"^(\w+)-to-(\w+) map:$").unwrap();
+    let mapping_pattern = Regex::new(r"^(\d+) (\d+) (\d+)$").unwrap();
 
     let mut seeds = Vec::new();
     let mut mappings = HashMap::new();
