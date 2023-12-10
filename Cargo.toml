@@ -4,10 +4,9 @@
 
 [workspace]
 resolver = "2"
-members = ["day_1", "day_2", "day_3", "day_4", "day_5", "day_6"]
+members = ["day_1", "day_2", "day_3", "day_4", "day_5", "day_6", "day_7"]
 
 [workspace.package]
-name = "adventofcode_2023"
 version = "0.1.0"
 edition = "2021"
 authors = ["David Skyberg <daviskyberg@gmail.com>"]
