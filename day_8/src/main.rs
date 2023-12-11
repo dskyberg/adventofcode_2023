@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -8,7 +9,7 @@ struct Map {
 }
 
 impl Map {
-    fn navigate(&self, start: &str, end: &str) -> Result<usize, String> {
+    fn navigate(&self, start: &str, end: &str) -> Result<usize> {
         let target_node_names = self.ends_with(start);
         let mut node_steps: Vec<usize> = Vec::new();
 
@@ -60,7 +61,7 @@ fn gcd(a: usize, b: usize) -> usize {
     gcd(b, a % b)
 }
 
-fn part_one(input: &str) -> Result<(), String> {
+fn part_one(input: &str) -> Result<()> {
     let map = parse_input(input)?;
     let start = std::time::Instant::now();
     let steps = map.navigate("AAA", "ZZZ")?;
@@ -68,7 +69,7 @@ fn part_one(input: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn part_two(input: &str) -> Result<(), String> {
+fn part_two(input: &str) -> Result<()> {
     let map = parse_input(input)?;
     let steps = map.navigate("A", "Z")?;
     let start = std::time::Instant::now();
@@ -76,7 +77,7 @@ fn part_two(input: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let input = include_str!("../../data/day_8.txt");
     // Answer 11309
     part_one(input)?;
@@ -85,7 +86,7 @@ fn main() -> Result<(), String> {
     Ok(())
 }
 
-fn parse_input(input: &str) -> Result<Map, String> {
+fn parse_input(input: &str) -> Result<Map> {
     let mut got_instructions = false;
     let mut skip = false;
     let mut map = Map::default();
@@ -108,7 +109,7 @@ fn parse_input(input: &str) -> Result<Map, String> {
         let left = captures[2].to_string();
         let right = captures[3].to_string();
         if map.nodes.contains_key(&node) {
-            return Err("node exists".to_string());
+            return Err(anyhow!("node exists"));
         }
         map.nodes.insert(node, (left, right));
     }

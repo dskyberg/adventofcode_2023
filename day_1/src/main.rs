@@ -1,3 +1,5 @@
+use anyhow::{anyhow, Result};
+
 fn find_first_digit(data: &str) -> Option<(char, usize)> {
     for (idx, val) in data.chars().enumerate() {
         if val.is_ascii_digit() {
@@ -21,10 +23,8 @@ fn find_last_digit_before(data: &str, before: usize) -> Option<char> {
     None
 }
 
-fn make_number(first: char, last: char) -> Result<usize, String> {
-    let val = format!("{}{}", first, last)
-        .parse::<usize>()
-        .map_err(|e| e.to_string())?;
+fn make_number(first: char, last: char) -> Result<usize> {
+    let val = format!("{}{}", first, last).parse::<usize>()?;
 
     Ok(val)
 }
@@ -43,7 +43,7 @@ fn starts_with(value: &Vec<char>, target: &Vec<char>) -> bool {
 
 /// Turn number words into digits.  So, 'one' becomes '1', etc.
 /// WARNING!!  'eightwo' should become '82', not '8wo'.
-fn replace_words(in_row: &str, words: &[Vec<char>]) -> Result<String, String> {
+fn replace_words(in_row: &str, words: &[Vec<char>]) -> Result<String> {
     let mut row_vec = in_row.chars().collect::<Vec<char>>();
     let mut result = Vec::<char>::new();
 
@@ -69,13 +69,13 @@ fn replace_words(in_row: &str, words: &[Vec<char>]) -> Result<String, String> {
     Ok(row)
 }
 
-fn part_one() -> Result<(), String> {
+fn part_one() -> Result<()> {
     let data_file = include_str!("../../data/day_1.txt");
     let data = data_file.split('\n').collect::<Vec<&str>>();
     let mut total: usize = 0;
     for row in data {
-        let (first, idx) = find_first_digit(row).ok_or("Failed to find first")?;
-        let last = find_last_digit_before(row, idx).ok_or("Failed to find last")?;
+        let (first, idx) = find_first_digit(row).ok_or(anyhow!("Failed to find first"))?;
+        let last = find_last_digit_before(row, idx).ok_or(anyhow!("Failed to find last"))?;
         let val = make_number(first, last).expect("oops");
         total += val;
     }
@@ -83,7 +83,7 @@ fn part_one() -> Result<(), String> {
     Ok(())
 }
 
-fn part_two() -> Result<(), String> {
+fn part_two() -> Result<()> {
     let words: Vec<Vec<char>> = vec![
         "zero".chars().collect::<Vec<char>>(),
         "one".chars().collect::<Vec<char>>(),
@@ -105,8 +105,8 @@ fn part_two() -> Result<(), String> {
             continue;
         }
         let row = replace_words(orig, &words)?;
-        let (first, idx) = find_first_digit(&row).ok_or("Failed to find first")?;
-        let last = find_last_digit_before(&row, idx).ok_or("Failed to find last")?;
+        let (first, idx) = find_first_digit(&row).ok_or(anyhow!("Failed to find first"))?;
+        let last = find_last_digit_before(&row, idx).ok_or(anyhow!("Failed to find last"))?;
         let val = make_number(first, last).expect("oops");
         total += val;
     }
@@ -114,7 +114,7 @@ fn part_two() -> Result<(), String> {
     Ok(())
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     part_one()?;
     part_two()?;
     Ok(())

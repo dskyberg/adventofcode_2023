@@ -1,3 +1,4 @@
+use anyhow::Result;
 #[derive(Debug)]
 struct MapEntry {
     destination: usize,
@@ -173,7 +174,7 @@ impl Almanac {
     }
 }
 
-pub fn part_one(input: &str) -> Result<(), String> {
+pub fn part_one(input: &str) -> Result<()> {
     let almanac = parse_almanac(input)?;
 
     let entries = almanac.entries();
@@ -184,7 +185,7 @@ pub fn part_one(input: &str) -> Result<(), String> {
     println!("Part One: {}", min_loc);
     Ok(())
 }
-pub fn part_two(_input: &str) -> Result<(), String> {
+pub fn part_two(_input: &str) -> Result<()> {
     println!("Part Two:");
     Ok(())
 }
@@ -194,7 +195,7 @@ fn nums_to_str(v: &[usize]) -> String {
     nums.join(", ")
 }
 
-fn parse_almanac(input: &str) -> Result<Almanac, String> {
+fn parse_almanac(input: &str) -> Result<Almanac> {
     let mut almanac = Almanac::default();
     let lines = input.split('\n').collect::<Vec<&str>>();
 

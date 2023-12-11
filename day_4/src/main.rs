@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 #[derive(Debug)]
 struct Card {
     winners: Vec<usize>,
@@ -26,16 +27,16 @@ impl Card {
 }
 
 impl TryFrom<&str> for Card {
-    type Error = String;
+    type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let card_parts = value.split(':').collect::<Vec<&str>>();
         if card_parts.len() != 2 {
-            return Err("Malformed card".to_string());
+            return Err(anyhow!("Malformed card"));
         }
         let game_parts = card_parts[1].split('|').collect::<Vec<&str>>();
         if game_parts.len() != 2 {
-            return Err("Malformed game parts".to_string());
+            return Err(anyhow!("Malformed game parts"));
         }
 
         let winners = game_parts[0].split(' ').collect::<Vec<&str>>();
@@ -43,21 +44,21 @@ impl TryFrom<&str> for Card {
         let winners = winners
             .iter()
             .filter(|s| !s.is_empty())
-            .map(|s| s.parse::<usize>().map_err(|e| e.to_string()))
-            .collect::<Result<Vec<usize>, String>>()?;
+            .map(|s| s.parse::<usize>())
+            .collect::<std::result::Result<Vec<usize>, _>>()?;
 
         //    let winners = winners.map(|s| s.parse::<usize>().map_err(|e| e.to_string())?)
         let haves = game_parts[1]
             .split(' ')
             .filter(|s| !s.is_empty())
-            .map(|s| s.parse::<usize>().map_err(|e| e.to_string()))
-            .collect::<Result<Vec<usize>, String>>()?;
+            .map(|s| s.parse::<usize>())
+            .collect::<std::result::Result<Vec<usize>, _>>()?;
 
         Ok(Card { winners, haves })
     }
 }
 
-fn part_one(cards: &Vec<Card>) -> Result<(), String> {
+fn part_one(cards: &Vec<Card>) -> Result<()> {
     let mut total = 0;
 
     for card in cards {
@@ -67,7 +68,7 @@ fn part_one(cards: &Vec<Card>) -> Result<(), String> {
     Ok(())
 }
 
-fn part_two(cards: &Vec<Card>) -> Result<(), String> {
+fn part_two(cards: &Vec<Card>) -> Result<()> {
     let mut card_counts: Vec<usize> = vec![1; cards.len()];
     let mut total = 0usize;
 
@@ -91,16 +92,16 @@ fn part_two(cards: &Vec<Card>) -> Result<(), String> {
     Ok(())
 }
 
-fn parse_data(data: &str) -> Result<Vec<Card>, String> {
+fn parse_data(data: &str) -> Result<Vec<Card>> {
     let cards = data
         .split('\n')
-        .map(|s| Card::try_from(s).map_err(|e| e.to_string()))
-        .collect::<Result<Vec<Card>, String>>()?;
+        .map(Card::try_from)
+        .collect::<Result<Vec<Card>, _>>()?;
 
     Ok(cards)
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let data = include_str!("../../data/day_4.txt");
     let cards = parse_data(data.trim())?;
     // Answer: 32001.

@@ -1,10 +1,10 @@
+use anyhow::Result;
+use itertools::Itertools;
+use regex::Regex;
 /// Stolen from https://github.com/idanarye/aoc-2023/blob/main/src/day5.rs
 ///
 use std::collections::{BTreeMap, HashMap};
 use std::ops::Range;
-
-use itertools::Itertools;
-use regex::Regex;
 
 #[derive(Debug)]
 pub struct Input {
@@ -146,7 +146,7 @@ impl Input {
     }
 }
 
-pub fn part_one(lines: &str) -> Result<(), String> {
+pub fn part_one(lines: &str) -> Result<()> {
     let input = generator(lines);
     println!("{:#?}", &input);
     let result = input
@@ -160,7 +160,7 @@ pub fn part_one(lines: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn part_two(lines: &str) -> Result<(), String> {
+pub fn part_two(lines: &str) -> Result<()> {
     let input = generator(lines);
 
     let result = input

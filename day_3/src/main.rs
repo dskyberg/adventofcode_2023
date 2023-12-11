@@ -3,6 +3,8 @@
 /// for row == 0: 0..=1
 /// for row == 1: 0..=2
 /// for row == 2: 1..3
+use anyhow::{anyhow, Result};
+
 fn usize_range(row: usize) -> std::ops::RangeInclusive<usize> {
     let lower = max(row as isize - 1, 0) as usize;
     lower..=row + 1
@@ -113,7 +115,7 @@ impl Schematics {
     }
 
     /// See if 2 numbers touch a gear
-    fn find_gears(&self) -> Result<Vec<Vec<usize>>, String> {
+    fn find_gears(&self) -> Result<Vec<Vec<usize>>> {
         let mut number_pairs: Vec<Vec<usize>> = Vec::new();
         for symbol in self.symbols.iter().filter(|s| s.is_gear()) {
             let mut numbers: Vec<usize> = Vec::new();
@@ -134,7 +136,7 @@ impl Schematics {
     }
 }
 
-fn read_number(data: &[u8], cursor: usize, x: usize, y: usize) -> Result<Number, String> {
+fn read_number(data: &[u8], cursor: usize, x: usize, y: usize) -> Result<Number> {
     // Read until the end of the number
     let start = Point::new(x, y);
     let mut look_ahead = cursor;
@@ -142,14 +144,11 @@ fn read_number(data: &[u8], cursor: usize, x: usize, y: usize) -> Result<Number,
         look_ahead += 1;
     }
     let end = Point::new(look_ahead - cursor + start.x - 1, y);
-    let value = std::str::from_utf8(&data[cursor..look_ahead])
-        .map_err(|e| e.to_string())?
-        .parse::<usize>()
-        .map_err(|e| e.to_string())?;
+    let value = std::str::from_utf8(&data[cursor..look_ahead])?.parse::<usize>()?;
     Ok(Number { value, start, end })
 }
 
-fn read_schematic(data: &[u8]) -> Result<Schematics, String> {
+fn read_schematic(data: &[u8]) -> Result<Schematics> {
     let mut schematics = Schematics::new();
 
     let mut x: usize = 0;
@@ -188,7 +187,7 @@ fn read_schematic(data: &[u8]) -> Result<Schematics, String> {
 }
 
 //test: 4361, actual 544433
-fn part_one(schematics: &Schematics) -> Result<(), String> {
+fn part_one(schematics: &Schematics) -> Result<()> {
     let parts = schematics.find_parts();
     let total: usize = parts.iter().sum();
 
@@ -197,12 +196,12 @@ fn part_one(schematics: &Schematics) -> Result<(), String> {
 }
 
 /// 76314915
-fn part_two(schematics: &Schematics) -> Result<(), String> {
+fn part_two(schematics: &Schematics) -> Result<()> {
     let gears = schematics.find_gears()?;
     let mut total = 0;
     for pair in gears {
         if pair.len() != 2 {
-            return Err("Wrong number of gears".to_string());
+            return Err(anyhow!("Wrong number of gears"));
         }
         total += pair[0] * pair[1];
     }
@@ -210,7 +209,7 @@ fn part_two(schematics: &Schematics) -> Result<(), String> {
     Ok(())
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let data = include_bytes!("../../data/day_3.txt");
     let schematics = read_schematic(data)?;
     part_one(&schematics)?;

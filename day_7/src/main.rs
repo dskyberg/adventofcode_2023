@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 /// Thanks to https://www.reddit.com/user/KyleGBC/ for hings on ordering!
 use std::collections::HashMap;
 
@@ -31,7 +32,7 @@ enum HandKind {
 }
 
 impl HandKind {
-    fn eval(cards: &[u32], use_wilds: bool) -> Result<Self, String> {
+    fn eval(cards: &[u32], use_wilds: bool) -> Result<Self> {
         let mut counts = HashMap::<u32, u32>::new();
 
         let mut wilds = 0;
@@ -53,7 +54,7 @@ impl HandKind {
             3 => Ok(Self::TwoPair),
             4 => Ok(Self::OnePair),
             5 => Ok(Self::High),
-            _ => Err("Unrecognized card".to_string()),
+            _ => Err(anyhow!("Unrecognized card")),
         }
     }
 }
@@ -96,11 +97,11 @@ impl Hand {
         result
     }
 
-    fn from_str(value: &str, use_wilds: bool) -> Result<Self, String> {
+    fn from_str(value: &str, use_wilds: bool) -> Result<Self> {
         let parts = value.split(' ').collect::<Vec<&str>>();
 
         if parts[0].len() != 5 {
-            return Err("wrong number of cards".to_string());
+            return Err(anyhow!("wrong number of cards"));
         }
         let cards = parts[0]
             .chars()
@@ -128,7 +129,7 @@ impl PartialOrd for Hand {
     }
 }
 
-fn eval(lines: &str, part: &str) -> Result<(), String> {
+fn eval(lines: &str, part: &str) -> Result<()> {
     let start = std::time::Instant::now();
     let use_wilds = matches!(part, "Two");
 
@@ -145,15 +146,15 @@ fn eval(lines: &str, part: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn parse_hands(input: &str, use_wilds: bool) -> Result<Vec<Hand>, String> {
+fn parse_hands(input: &str, use_wilds: bool) -> Result<Vec<Hand>> {
     let hands = input
         .lines()
-        .map(|line| Hand::from_str(line, use_wilds).map_err(|e| e.to_string()))
-        .collect::<Result<Vec<Hand>, String>>()?;
+        .map(|line| Hand::from_str(line, use_wilds))
+        .collect::<Result<Vec<Hand>>>()?;
     Ok(hands)
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let lines = include_str!("../../data/day_7.txt");
     // Git: 253954294
     eval(lines, "One")?;

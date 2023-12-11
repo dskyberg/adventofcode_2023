@@ -1,6 +1,6 @@
-use std::cmp::max;
-
+use anyhow::{anyhow, Result};
 use regex::Regex;
+use std::cmp::max;
 
 #[derive(Debug)]
 struct GameHand {
@@ -35,21 +35,21 @@ impl std::fmt::Display for GameHand {
 }
 
 impl TryFrom<&str> for GameHand {
-    type Error = String;
+    type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let mut hand = Self::new();
         for colors in value.split(',') {
             let re = Regex::new(r"(?<count>\d+) (?<color>red|blue|green)").unwrap();
             let Some(caps) = re.captures(colors) else {
-                return Err("Malformed colors".to_string());
+                return Err(anyhow!("Malformed colors"));
             };
 
-            let count = caps["count"].parse::<usize>().map_err(|e| e.to_string())?;
+            let count = caps["count"].parse::<usize>()?;
             match &caps["color"] {
                 "red" => hand.red = count,
                 "blue" => hand.blue = count,
                 "green" => hand.green = count,
-                _ => return Err(format!("Unknown color:v {}", &caps["color"])),
+                _ => return Err(anyhow!("Unknown color:v {}", &caps["color"])),
             }
         }
 
@@ -107,21 +107,19 @@ impl std::fmt::Display for Game {
 }
 
 impl TryFrom<&str> for Game {
-    type Error = String;
+    type Error = anyhow::Error;
     fn try_from(line: &str) -> Result<Self, Self::Error> {
         // Break the line into the game counter and the hands
         let meta_parts = line.split(':').collect::<Vec<&str>>();
         if meta_parts.len() != 2 {
-            return Err("Game is malformed".to_string());
+            return Err(anyhow!("Game is malformed"));
         }
         // Get the game counter:
         let counter_re = Regex::new(r"Game (?<game_counter>\d+)").unwrap();
         let caps = counter_re
             .captures(meta_parts[0])
-            .ok_or("Failed to parse game counter".to_string())?;
-        let game_counter = caps["game_counter"]
-            .parse::<usize>()
-            .map_err(|e| e.to_string())?;
+            .ok_or(anyhow!("Failed to parse game counter"))?;
+        let game_counter = caps["game_counter"].parse::<usize>()?;
 
         let mut result = Self::new();
         result.count = game_counter;
@@ -136,7 +134,7 @@ impl TryFrom<&str> for Game {
     }
 }
 
-fn part_one(games: &Vec<Game>) -> Result<(), String> {
+fn part_one(games: &Vec<Game>) -> Result<()> {
     // Compare to
     let compare_to = GameHand::try_from("12 red, 13 green, 14 blue").expect("Failed bad!!");
     let mut total = 0;
@@ -149,7 +147,7 @@ fn part_one(games: &Vec<Game>) -> Result<(), String> {
     Ok(())
 }
 
-fn part_two(games: &Vec<Game>) -> Result<(), String> {
+fn part_two(games: &Vec<Game>) -> Result<()> {
     let mut result = 0usize;
     for game in games {
         let power = game.power();
@@ -160,7 +158,7 @@ fn part_two(games: &Vec<Game>) -> Result<(), String> {
 }
 
 use std::io::Write;
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let lines = include_str!("../../data/day_2.txt")
         .split('\n')
         .collect::<Vec<&str>>();

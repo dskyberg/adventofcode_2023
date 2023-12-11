@@ -1,3 +1,4 @@
+use anyhow::Result;
 #[derive(Debug)]
 struct Race {
     time: usize,
@@ -18,7 +19,7 @@ impl Race {
     }
 }
 
-fn part_one(races: &[Race]) -> Result<(), String> {
+fn part_one(races: &[Race]) -> Result<()> {
     let results = races
         .iter()
         .map(|race| race.ways_to_win())
@@ -32,7 +33,7 @@ fn part_one(races: &[Race]) -> Result<(), String> {
     Ok(())
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<()> {
     let races = generate_races("not test");
     // Answer:
     part_one(&races)?;

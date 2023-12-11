@@ -20,26 +20,37 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 [[package]]
 name = "day_1"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "day_2"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "regex",
 ]
 
 [[package]]
 name = "day_3"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "day_4"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "day_5"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "itertools",
  "regex",
 ]
@@ -47,15 +58,22 @@ dependencies = [
 [[package]]
 name = "day_6"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "day_7"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "day_8"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "regex",
 ]
 
