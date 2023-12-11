@@ -13,6 +13,7 @@ members = [
     "day_6",
     "day_7",
     "day_8",
+    "day_9",
 ]
 
 [workspace.package]
@@ -20,3 +21,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["David Skyberg <daviskyberg@gmail.com>"]
 license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1.0.75"
+itertools = "0.12.0"
+regex = "1.10.2"
