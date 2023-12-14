@@ -54,12 +54,12 @@ struct Point {
 }
 
 #[derive(Debug, Default, Clone)]
-struct Coord {
+struct Tile {
     point: Point,
     conns: Connections,
 }
 
-impl Coord {
+impl Tile {
     fn possible_connects(&self, max_x: usize, max_y: usize) -> Vec<Point> {
         let mut results: Vec<Point> = Vec::new();
         match self.conns {
@@ -157,18 +157,18 @@ impl Coord {
 struct Pipes {
     pub max_x: usize,
     pub max_y: usize,
-    pub map: Vec<Vec<Coord>>,
+    pub map: Vec<Vec<Tile>>,
     /// The Connections for the starting coordinate is normalized in [parse_input].
-    pub start: Coord,
+    pub start: Tile,
 }
 
 impl Pipes {
-    fn get_coord(&self, point: &Point) -> &Coord {
+    fn get_coord(&self, point: &Point) -> &Tile {
         &self.map[point.y][point.x]
     }
 
     /// Get the starting connections, and just use the first one as the first "from"
-    fn starting_from(&self) -> &Coord {
+    fn starting_from(&self) -> &Tile {
         let start_possibles = self
             .get_coord(&self.start.point)
             .possible_connects(self.max_x, self.max_y);
@@ -178,7 +178,7 @@ impl Pipes {
 
     /// Find the two connecting coords for the current spot,
     /// One should match 'from'.  Return the other.
-    fn next(&self, curr: &Coord, from: &Coord) -> &Coord {
+    fn next(&self, curr: &Tile, from: &Tile) -> &Tile {
         let possibles = curr.possible_connects(self.max_x, self.max_y);
         if possibles.len() != 2 {
             panic!("This should always be 2 possibilities!");
@@ -212,6 +212,7 @@ impl Pipes {
     }
 }
 
+/// Find the farthest
 fn part_one(input: &str) -> Result<()> {
     let start = std::time::Instant::now();
     let pipes = parse_input(input);
@@ -230,27 +231,24 @@ fn part_two(_input: &str) -> Result<()> {
 
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_10.txt");
-
-    // Answer:
     part_one(input)?;
-    // Answer:
     part_two(input)?;
 
     Ok(())
 }
 
 fn parse_input(input: &str) -> Pipes {
-    let mut map: Vec<Vec<Coord>> = Vec::new();
+    let mut map: Vec<Vec<Tile>> = Vec::new();
     let mut start_point = Point::default();
 
     for (y, row) in input.lines().enumerate() {
-        let mut dirs: Vec<Coord> = Vec::new();
+        let mut dirs: Vec<Tile> = Vec::new();
         for (x, c) in row.chars().enumerate() {
             let conns = Connections::from(c);
             if matches!(conns, Connections::Start) {
                 start_point = Point { x, y };
             }
-            dirs.push(Coord {
+            dirs.push(Tile {
                 point: Point { x, y },
                 conns,
             });
@@ -275,7 +273,7 @@ fn parse_input(input: &str) -> Pipes {
     let south_coord = &map[start_point.y + 1][start_point.x];
     let possible_south = south_coord.possible_connects(max_x, max_y);
 
-    let mut start_coord = Coord {
+    let mut start_coord = Tile {
         point: start_point.clone(),
         conns: Connections::Ground,
     };
