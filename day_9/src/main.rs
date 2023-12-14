@@ -67,9 +67,7 @@ fn main() -> Result<()> {
     let input = include_str!("../../data/day_9.txt");
     let _matrix = parse_input(input)?;
 
-    // Answer: 1647269739
     part_one(input)?;
-    // Answer:
     part_two(input)?;
 
     Ok(())

@@ -79,9 +79,8 @@ fn part_two(input: &str) -> Result<()> {
 
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_8.txt");
-    // Answer 11309
+
     part_one(input)?;
-    // Answer 13740108158591
     part_two(input)?;
     Ok(())
 }

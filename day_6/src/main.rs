@@ -35,14 +35,13 @@ fn part_one(races: &[Race]) -> Result<()> {
 
 fn main() -> Result<()> {
     let races = generate_races("not test");
-    // Answer:
+
     part_one(&races)?;
     let races = vec![Race {
         time: 60808676,
         record: 601116315591300,
     }];
 
-    // Answer: 35961505
     part_one(&races)?;
     Ok(())
 }

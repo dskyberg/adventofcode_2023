@@ -156,7 +156,7 @@ fn parse_hands(input: &str, use_wilds: bool) -> Result<Vec<Hand>> {
 
 fn main() -> Result<()> {
     let lines = include_str!("../../data/day_7.txt");
-    // Git: 253954294
+
     eval(lines, "One")?;
     eval(lines, "Two")?;
     Ok(())

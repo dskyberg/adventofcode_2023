@@ -104,9 +104,8 @@ fn parse_data(data: &str) -> Result<Vec<Card>> {
 fn main() -> Result<()> {
     let data = include_str!("../../data/day_4.txt");
     let cards = parse_data(data.trim())?;
-    // Answer: 32001.
+
     part_one(&cards)?;
-    // Answer: 5037841
     part_two(&cards)?;
     Ok(())
 }

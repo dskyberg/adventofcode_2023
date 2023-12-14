@@ -186,7 +186,6 @@ fn read_schematic(data: &[u8]) -> Result<Schematics> {
     Ok(schematics)
 }
 
-//test: 4361, actual 544433
 fn part_one(schematics: &Schematics) -> Result<()> {
     let parts = schematics.find_parts();
     let total: usize = parts.iter().sum();
@@ -195,7 +194,6 @@ fn part_one(schematics: &Schematics) -> Result<()> {
     Ok(())
 }
 
-/// 76314915
 fn part_two(schematics: &Schematics) -> Result<()> {
     let gears = schematics.find_gears()?;
     let mut total = 0;

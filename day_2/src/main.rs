@@ -168,10 +168,8 @@ fn main() -> Result<()> {
     for line in lines {
         games.push(Game::try_from(line)?);
     }
-    println!(" done!");
-    // 2685
+
     part_one(&games)?;
-    // 83707
     part_two(&games)?;
     Ok(())
 }
