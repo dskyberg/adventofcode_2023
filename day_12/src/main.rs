@@ -1,3 +1,5 @@
+/// Thanks to:
+/// https://github.com/maneatingape/advent-of-code-rust/blob/main/src/year2023/day12.rs
 use anyhow::{anyhow, Result};
 use utils::parse_nums;
 
