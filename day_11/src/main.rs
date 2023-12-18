@@ -19,7 +19,7 @@ impl Universe {
             .enumerate()
             .fold(0, |mut acc, (i, gal)| {
                 for next_gal in &self.galaxies[i + 1..] {
-                    acc += gal.manhattan_distance(next_gal);
+                    acc += gal.manhattan_distance(next_gal) as usize;
                 }
                 acc
             })
@@ -29,7 +29,7 @@ impl std::fmt::Display for Universe {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut points: Vec<Vec<char>> = vec![vec!['.'; self.max_x + 1]; self.max_y + 1];
         for g in &self.galaxies {
-            points[g.y][g.x] = '#';
+            points[g.y as usize][g.x as usize] = '#';
         }
 
         for row in points {
@@ -96,8 +96,8 @@ fn expand(
     // Map the Point x and y to the row_col maps
     let mut galaxies: Vec<Point> = Vec::new();
     for g in &universe.galaxies {
-        let x = col_map.get(&g.x).unwrap();
-        let y = row_map.get(&g.y).unwrap();
+        let x = col_map.get(&(g.x as usize)).unwrap();
+        let y = row_map.get(&(g.y as usize)).unwrap();
         galaxies.push((x, y).into());
     }
 
