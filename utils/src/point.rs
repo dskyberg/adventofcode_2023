@@ -1,8 +1,53 @@
+//! Generic 2D coordinate.
+//! If you want cartesian points, use Point<i32>.  If you want simple row,col grid coordinates, use Point<u32>.
+//! If you need very large cartesian or grid coordinates, use Point<isize> or Point<usize>.  And of course, if you have
+//! very small grid needs, you can use  Point<u8>.
+//!
+//! Typical aritimetic is supported
+//!
+//! ```rust
+//! let lhs = Point::<i32>::new(1,1);
+//! let rhs = Point::<i32>::new(2,2);
+//! let result = lhs + rhs;
+//! assert_eq!(&result, &Point::<i32>::new(3,3));
+//! ```
+//!
+//! Test whether a point is bounded
+//!
+//! ```rust
+//! let upper = Point::<i32>::origin();
+//! let lower = Point::<i32>::new(10,10);
+//! let inside = Point::<i32>::new(4,5);
+//! assert!(inside.bounded(&upper, &lower));
+//! ```
+//!
+//! The above can be simplified with [bounded_z]
+//!
+//! ```rust
+//! let lower = Point::<i32>::new(10,10);
+//! let inside = Point::<i32>::new(4,5);
+//! assert!(inside.bounded_z(&lower));
+//!
+//! Find the distance between 2 points:
+//! ```rust
+//!  let p1 = Point::<i32>::from((1, 1));
+//!  let p2 = Point::<i32>::from((2, 3));
+//!  assert_eq!(p1.manhattan_distance(&p2), 3);
+//!
+//! Parse points from strings:
+//!
+//! ```rust
+//!   let input = "1,2";
+//!   let point = Point::<i32>::try_from(input);
+//!   assert!(point.is_ok());
+//!   assert_eq!(point.unwrap(), Point::<i32>::new(1, 2));
+
 use anyhow::anyhow;
 use num::Integer;
 use std::cmp::{max, min};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Point<T> {
     pub x: T,
     pub y: T,
@@ -77,18 +122,114 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
     }
 }
 
-impl<T: Copy> From<(&T, &T)> for Point<T> {
-    fn from(value: (&T, &T)) -> Self {
-        Self {
-            x: *value.0,
-            y: *value.1,
-        }
+impl<
+        T: Integer
+            + PartialOrd
+            + Ord
+            + Eq
+            + Sized
+            + Send
+            + Sync
+            + Copy
+            + num::FromPrimitive
+            + num::Signed,
+    > Point<T>
+{
+    #[inline]
+    pub fn signum(self, other: Self) -> Self {
+        Self::new((self.x - other.x).signum(), (self.y - other.y).signum())
     }
 }
 
-impl<T: Eq> PartialEq for Point<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
+impl<
+        T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive + Add,
+    > Add for Point<T>
+{
+    type Output = Self;
+
+    #[inline]
+    #[must_use]
+    fn add(self, rhs: Self) -> Self {
+        Self::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl<
+        T: Integer
+            + PartialOrd
+            + Ord
+            + Eq
+            + Sized
+            + Send
+            + Sync
+            + Copy
+            + num::FromPrimitive
+            + AddAssign,
+    > AddAssign for Point<T>
+{
+    #[inline]
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
+impl<
+        T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive + Mul,
+    > Mul<T> for Point<T>
+{
+    type Output = Self;
+
+    #[inline]
+    #[must_use]
+    fn mul(self, rhs: T) -> Self {
+        Point::new(self.x * rhs, self.y * rhs)
+    }
+}
+
+impl<
+        T: Integer
+            + PartialOrd
+            + Ord
+            + Eq
+            + Sized
+            + Send
+            + Sync
+            + Copy
+            + num::FromPrimitive
+            + num::CheckedSub
+            + std::default::Default,
+    > Sub for Point<T>
+{
+    type Output = Self;
+
+    #[inline]
+    #[must_use]
+    fn sub(self, rhs: Self) -> Self {
+        let x = self.x.checked_sub(&rhs.x).unwrap_or_default();
+        let y = self.y.checked_sub(&rhs.y).unwrap_or_default();
+        Self::new(x, y)
+    }
+}
+
+impl<
+        T: Integer
+            + PartialOrd
+            + Ord
+            + Eq
+            + Sized
+            + Send
+            + Sync
+            + Copy
+            + num::FromPrimitive
+            + num::CheckedSub
+            + std::default::Default,
+    > SubAssign for Point<T>
+{
+    #[inline]
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x = self.x.checked_sub(&rhs.x).unwrap_or_default();
+        self.y = self.y.checked_sub(&rhs.y).unwrap_or_default();
     }
 }
 
@@ -138,6 +279,12 @@ impl<T: num::FromPrimitive> From<(i32, i32)> for Point<T> {
             x: T::from_i32(value.0).unwrap(),
             y: T::from_i32(value.1).unwrap(),
         }
+    }
+}
+
+impl<T: std::fmt::Display> std::fmt::Display for Point<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}, {}]", &self.x, &self.y)
     }
 }
 
@@ -191,23 +338,60 @@ mod tests {
 
     #[test]
     fn test_manhattan_t_usize() {
-        let p1 = Point::<usize>::from((1, 1));
-        let p2 = Point::<usize>::from((2, 3));
+        let p1 = Point::<i32>::from((1, 1));
+        let p2 = Point::<i32>::from((2, 3));
 
-        assert_eq!(p1.manhattan_distance(&p2), 3usize);
+        assert_eq!(p1.manhattan_distance(&p2), 3);
     }
 
     #[test]
     fn test_froms() {
         let x = 1;
         let y = 1;
-        let p = Point::<i32>::from((&x, &y));
+        let p = Point::<i32>::from((x, y));
         assert_eq!(p, Point::<i32> { x: 1, y: 1 });
 
         let p = Point::<i32>::try_from("1,2");
         assert!(p.is_ok());
         assert_eq!(p.unwrap(), Point::<i32> { x: 1, y: 2 });
+    }
 
-        let p = Point::<usize>::from((x, y));
+    #[test]
+    fn test_add() {
+        let lhs = Point::<i32>::new(1, 1);
+        let rhs = Point::<i32>::new(2, 2);
+        let result = lhs + rhs;
+        assert_eq!(result, Point::<i32>::new(3, 3));
+
+        let mut lhs = Point::<i32>::new(1, 1);
+        lhs += rhs;
+        assert_eq!(lhs, Point::<i32>::new(3, 3));
+        println!("Can still borrow lhs: {lhs}, and rhs: {rhs}");
+    }
+
+    #[test]
+    fn test_sub() {
+        let lhs = Point::<i32>::new(1, 1);
+        let rhs = Point::<i32>::new(2, 2);
+        let result = lhs - rhs;
+        assert_eq!(result, Point::<i32>::new(-1, -1));
+
+        let mut lhs = Point::<i32>::new(1, 1);
+        lhs -= rhs;
+        assert_eq!(lhs, Point::<i32>::new(-1, -1));
+        println!("Can still borrow lhs: {lhs}, and rhs: {rhs}");
+    }
+
+    #[test]
+    fn test_checked_sub() {
+        let lhs = Point::<u32>::new(1, 1);
+        let rhs = Point::<u32>::new(2, 2);
+        let result = lhs - rhs;
+        assert_eq!(result, Point::<u32>::new(0, 0));
+
+        let mut lhs = Point::<u32>::new(1, 1);
+        lhs -= rhs;
+        assert_eq!(lhs, Point::<u32>::new(0, 0));
+        println!("Can still borrow lhs: {lhs}, and rhs: {rhs}");
     }
 }
