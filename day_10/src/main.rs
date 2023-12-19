@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 enum Connections {
     NorthAndSouth,
     EastAndWest,
@@ -34,13 +34,13 @@ impl std::fmt::Display for Connections {
             f,
             "{}",
             match self {
-                Connections::NorthAndSouth => '|',
-                Connections::EastAndWest => '-',
-                Connections::NorthAndEast => 'L',
-                Connections::NorthAndWest => 'J',
-                Connections::SouthAndWest => '7',
-                Connections::SouthAndEast => 'F',
-                Connections::Ground => '.',
+                Connections::NorthAndSouth => '│',
+                Connections::EastAndWest => '─',
+                Connections::NorthAndEast => '└',
+                Connections::NorthAndWest => '┘',
+                Connections::SouthAndWest => '┐',
+                Connections::SouthAndEast => '┌',
+                Connections::Ground => ' ',
                 Connections::Start => 'S',
             }
         )
@@ -176,7 +176,7 @@ impl Pipes {
         self.get_coord(&start_possibles[0])
     }
 
-    /// Find the two connecting coords for the current spot,
+    /// Find the two connecting tiles for the current tile,
     /// One should match 'from'.  Return the other.
     fn next(&self, curr: &Tile, from: &Tile) -> &Tile {
         let possibles = curr.possible_connects(self.max_x, self.max_y);
@@ -210,6 +210,53 @@ impl Pipes {
         }
         moves
     }
+
+    fn find_area(&self) -> Vec<Point> {
+        let mut points = Vec::new();
+        let path = self.measure_path();
+        let inside = |edges: usize| -> bool { edges > 0 && edges % 2 == 1 };
+
+        for (y, row) in self.map.iter().enumerate() {
+            for (x, tile) in row.iter().enumerate() {
+                if tile.conns != Connections::Ground {
+                    continue;
+                }
+                let left_edges = self.map[y][0..x]
+                    .iter()
+                    .filter(|t| {
+                        path.contains(&t.point)
+                            && matches!(
+                                t.conns,
+                                Connections::NorthAndSouth
+                                    | Connections::NorthAndEast
+                                    | Connections::NorthAndWest
+                            )
+                    })
+                    .count();
+
+                let right_edges = self.map[y][x..self.max_x]
+                    .iter()
+                    .filter(|t| {
+                        path.contains(&tile.point)
+                            && matches!(
+                                t.conns,
+                                Connections::NorthAndSouth
+                                    | Connections::NorthAndEast
+                                    | Connections::NorthAndWest
+                            )
+                    })
+                    .count();
+
+                if inside(left_edges) && right_edges > 0 {
+                    points.push(Point {
+                        x: tile.point.x,
+                        y: tile.point.y,
+                    });
+                }
+            }
+        }
+        points
+    }
 }
 
 /// Find the farthest
@@ -222,10 +269,12 @@ fn part_one(input: &str) -> Result<()> {
     Ok(())
 }
 
-fn part_two(_input: &str) -> Result<()> {
+fn part_two(input: &str) -> Result<()> {
     let start = std::time::Instant::now();
+    let pipes = parse_input(input);
+    let result = pipes.find_area();
 
-    println!("Part Two: -- {:?}", start.elapsed());
+    println!("Part Two: {} -- {:?}", result.len(), start.elapsed());
     Ok(())
 }
 
@@ -300,5 +349,31 @@ fn parse_input(input: &str) -> Pipes {
         max_y,
         map,
         start: start_coord,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_it() {
+        let input = include_str!("../../data/day_10.txt");
+        let pipes = parse_input(input);
+        let result = pipes.measure_path();
+        let area = pipes.find_area();
+        for row in pipes.map {
+            for tile in row {
+                if result.contains(&tile.point) {
+                    print!("{}", &tile.conns);
+                } else if area.contains(&tile.point) {
+                    print!("I");
+                } else {
+                    print!(" ");
+                }
+            }
+            println!();
+        }
+        println!("Area: {}", area.len());
     }
 }

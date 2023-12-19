@@ -5,9 +5,11 @@ use std::collections::HashMap;
 use anyhow::Result;
 use utils::Point;
 
+type Pointi32 = Point<i32>;
+
 #[derive(Debug, Clone)]
 struct Universe {
-    pub galaxies: Vec<Point>,
+    pub galaxies: Vec<Pointi32>,
     pub max_x: usize,
     pub max_y: usize,
 }
@@ -94,11 +96,11 @@ fn expand(
     }
 
     // Map the Point x and y to the row_col maps
-    let mut galaxies: Vec<Point> = Vec::new();
+    let mut galaxies: Vec<Pointi32> = Vec::new();
     for g in &universe.galaxies {
         let x = col_map.get(&(g.x as usize)).unwrap();
         let y = row_map.get(&(g.y as usize)).unwrap();
-        galaxies.push((x, y).into());
+        galaxies.push((*x, *y).into());
     }
 
     // Return the expanded universe
@@ -112,7 +114,7 @@ fn expand(
 /// Parse the input to a Universe, and then expand it
 /// Returns the expanded universe.
 fn parse_input(input: &[u8], expansion_factor: usize) -> Result<Universe> {
-    let mut galaxies: Vec<Point> = Vec::new();
+    let mut galaxies: Vec<Pointi32> = Vec::new();
     let mut rows: HashMap<usize, usize> = HashMap::new();
     let mut cols: HashMap<usize, usize> = HashMap::new();
 
