@@ -7,6 +7,7 @@ struct Card {
 
 impl Card {
     pub fn matches(&self) -> usize {
+        /*
         let mut matches = 0;
         for have in &self.haves {
             if self.winners.contains(have) {
@@ -14,6 +15,14 @@ impl Card {
             }
         }
         matches
+        */
+        self.haves.iter().fold(0, |acc, have| {
+            if self.winners.contains(have) {
+                acc + 1
+            } else {
+                acc
+            }
+        })
     }
 
     pub fn points(&self) -> usize {
@@ -58,17 +67,18 @@ impl TryFrom<&str> for Card {
     }
 }
 
-fn part_one(cards: &Vec<Card>) -> Result<()> {
-    let mut total = 0;
+fn part_one(cards: &[Card]) -> Result<()> {
+    let timer = std::time::Instant::now();
 
-    for card in cards {
-        total += card.points();
-    }
-    println!("Part One: {}", total);
+    let total = cards.iter().fold(0, |acc, card| acc + card.points());
+
+    println!("Part One: {} -- {:?}", total, timer.elapsed());
     Ok(())
 }
 
 fn part_two(cards: &Vec<Card>) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let mut card_counts: Vec<usize> = vec![1; cards.len()];
     let mut total = 0usize;
 
@@ -88,7 +98,7 @@ fn part_two(cards: &Vec<Card>) -> Result<()> {
         }
     }
 
-    println!("Part Two: {}", &total);
+    println!("Part Two: {} -- {:?}", &total, timer.elapsed());
     Ok(())
 }
 
