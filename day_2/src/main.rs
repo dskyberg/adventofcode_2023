@@ -134,26 +134,27 @@ impl TryFrom<&str> for Game {
     }
 }
 
-fn part_one(games: &Vec<Game>) -> Result<()> {
+fn part_one(games: &[Game]) -> Result<()> {
+    let timer = std::time::Instant::now();
     // Compare to
     let compare_to = GameHand::try_from("12 red, 13 green, 14 blue").expect("Failed bad!!");
-    let mut total = 0;
-    for game in games {
+
+    let total = games.iter().fold(0, |acc, game| {
         if game.possible(&compare_to) {
-            total += game.count;
+            acc + game.count
+        } else {
+            acc
         }
-    }
-    println!("Part One: {}", total);
+    });
+    println!("Part One: {} -- {:?}", total, timer.elapsed());
     Ok(())
 }
 
-fn part_two(games: &Vec<Game>) -> Result<()> {
-    let mut result = 0usize;
-    for game in games {
-        let power = game.power();
-        result += power;
-    }
-    println!("Part Two: {}", result);
+fn part_two(games: &[Game]) -> Result<()> {
+    let timer = std::time::Instant::now();
+
+    let result = games.iter().fold(0, |acc, game| acc + game.power());
+    println!("Part Two: {} -- {:?}", result, timer.elapsed());
     Ok(())
 }
 
