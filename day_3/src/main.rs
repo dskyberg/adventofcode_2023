@@ -3,7 +3,7 @@
 /// for row == 0: 0..=1
 /// for row == 1: 0..=2
 /// for row == 2: 1..3
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 
 fn usize_range(row: usize) -> std::ops::RangeInclusive<usize> {
     let lower = max(row as isize - 1, 0) as usize;
@@ -15,6 +15,7 @@ struct Point {
     pub x: usize,
     pub y: usize,
 }
+
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
@@ -187,23 +188,21 @@ fn read_schematic(data: &[u8]) -> Result<Schematics> {
 }
 
 fn part_one(schematics: &Schematics) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let parts = schematics.find_parts();
     let total: usize = parts.iter().sum();
 
-    println!("Part One: {}", total);
+    println!("Part One: {} -- {:?}", total, timer.elapsed());
     Ok(())
 }
 
 fn part_two(schematics: &Schematics) -> Result<()> {
+    let timer = std::time::Instant::now();
     let gears = schematics.find_gears()?;
-    let mut total = 0;
-    for pair in gears {
-        if pair.len() != 2 {
-            return Err(anyhow!("Wrong number of gears"));
-        }
-        total += pair[0] * pair[1];
-    }
-    println!("Part Two: {}", total);
+    let total = gears.iter().fold(0, |acc, pair| acc + pair[0] * pair[1]);
+
+    println!("Part Two: {} -- {:?}", total, timer.elapsed());
     Ok(())
 }
 
