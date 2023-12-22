@@ -19,30 +19,29 @@ impl Race {
     }
 }
 
-fn part_one(races: &[Race]) -> Result<()> {
+fn solve(part: &str, races: &[Race]) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let results = races
         .iter()
         .map(|race| race.ways_to_win())
         .collect::<Vec<usize>>();
-    let mut result = 1;
-    for r in results {
-        result *= r;
-    }
-    // should be [4, 8, 9]
-    println!("Part One: {:?}", result);
+    let result = results.iter().fold(1, |acc, r| acc * r);
+
+    println!("Part {}: {:?} -- {:?}", part, result, timer.elapsed());
     Ok(())
 }
 
 fn main() -> Result<()> {
     let races = generate_races("not test");
 
-    part_one(&races)?;
+    solve("One", &races)?;
     let races = vec![Race {
         time: 60808676,
         record: 601116315591300,
     }];
 
-    part_one(&races)?;
+    solve("Two", &races)?;
     Ok(())
 }
 
