@@ -31,44 +31,50 @@ fn reduce_one(nums: &[Vec<isize>], triangle: &[Vec<isize>]) -> isize {
 }
 
 fn reduce_two(nums: &[Vec<isize>], triangle: &[Vec<isize>]) -> isize {
-    let mut answer: isize = 0;
-    for nums in nums {
-        let row = nums.len();
-        answer += nums
+    /*
+        let mut answer: isize = 0;
+        for nums in nums {
+            let row = nums.len();
+            answer += nums
+                .iter()
+                .enumerate()
+                .map(|(col, n)| triangle[row][col + 1] * n)
+                .sum::<isize>();
+        }
+    */
+    nums.iter().fold(0, |acc, nums| {
+        acc + nums
             .iter()
             .enumerate()
-            .map(|(col, n)| triangle[row][col + 1] * n)
-            .sum::<isize>();
-    }
-    answer
+            .map(|(col, n)| triangle[nums.len()][col + 1] * n)
+            .sum::<isize>()
+    })
 }
 
-fn part_one(input: &str) -> Result<()> {
-    let nums = parse_input(input)?;
-    let start = std::time::Instant::now();
+fn part_one(nums: &[Vec<isize>]) -> Result<()> {
+    let timer = std::time::Instant::now();
     let triangle = pascal(nums[0].len());
-    let result = reduce_one(&nums, &triangle);
-    println!("Part One: {} -- {:?}", result, start.elapsed());
+    let result = reduce_one(nums, &triangle);
+    println!("Part One: {} -- {:?}", result, timer.elapsed());
 
     Ok(())
 }
 
-fn part_two(input: &str) -> Result<()> {
-    let nums = parse_input(input)?;
-    let start = std::time::Instant::now();
+fn part_two(nums: &[Vec<isize>]) -> Result<()> {
+    let timer = std::time::Instant::now();
     let triangle = pascal(nums[0].len());
-    let result = reduce_two(&nums, &triangle);
-    println!("Part Two: {} -- {:?}", result, start.elapsed());
+    let result = reduce_two(nums, &triangle);
+    println!("Part Two: {} -- {:?}", result, timer.elapsed());
 
     Ok(())
 }
 
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_9.txt");
-    let _matrix = parse_input(input)?;
+    let nums = parse_input(input)?;
 
-    part_one(input)?;
-    part_two(input)?;
+    part_one(&nums)?;
+    part_two(&nums)?;
 
     Ok(())
 }
