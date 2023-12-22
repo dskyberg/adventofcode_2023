@@ -46,11 +46,7 @@ impl Map {
 }
 
 fn least_common_multiple(nums: &[usize]) -> usize {
-    let mut result = 1;
-    for &num in nums {
-        result = num * result / gcd(num, result);
-    }
-    result
+    nums.iter().fold(1, |acc, num| num * acc / gcd(*num, acc))
 }
 
 fn gcd(a: usize, b: usize) -> usize {
@@ -61,27 +57,28 @@ fn gcd(a: usize, b: usize) -> usize {
     gcd(b, a % b)
 }
 
-fn part_one(input: &str) -> Result<()> {
-    let map = parse_input(input)?;
-    let start = std::time::Instant::now();
+fn part_one(map: &Map) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let steps = map.navigate("AAA", "ZZZ")?;
-    println!("Part One: {} -- {:?}", steps, start.elapsed());
+    println!("Part One: {} -- {:?}", steps, timer.elapsed());
     Ok(())
 }
 
-fn part_two(input: &str) -> Result<()> {
-    let map = parse_input(input)?;
+fn part_two(map: &Map) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let steps = map.navigate("A", "Z")?;
-    let start = std::time::Instant::now();
-    println!("Part Two: {} -- {:?}", &steps, start.elapsed());
+    println!("Part Two: {} -- {:?}", &steps, timer.elapsed());
     Ok(())
 }
 
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_8.txt");
+    let map = parse_input(input)?;
 
-    part_one(input)?;
-    part_two(input)?;
+    part_one(&map)?;
+    part_two(&map)?;
     Ok(())
 }
 
