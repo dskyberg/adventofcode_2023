@@ -260,28 +260,27 @@ impl Pipes {
 }
 
 /// Find the farthest
-fn part_one(input: &str) -> Result<()> {
-    let start = std::time::Instant::now();
-    let pipes = parse_input(input);
+fn part_one(pipes: &Pipes) -> Result<()> {
+    let timer = std::time::Instant::now();
     let result = pipes.measure_path();
 
-    println!("Part One: {} -- {:?}", result.len() / 2, start.elapsed());
+    println!("Part One: {} -- {:?}", result.len() / 2, timer.elapsed());
     Ok(())
 }
 
-fn part_two(input: &str) -> Result<()> {
-    let start = std::time::Instant::now();
-    let pipes = parse_input(input);
+fn part_two(pipes: &Pipes) -> Result<()> {
+    let timer = std::time::Instant::now();
     let result = pipes.find_area();
 
-    println!("Part Two: {} -- {:?}", result.len(), start.elapsed());
+    println!("Part Two: {} -- {:?}", result.len(), timer.elapsed());
     Ok(())
 }
 
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_10.txt");
-    part_one(input)?;
-    part_two(input)?;
+    let pipes = parse_input(input);
+    part_one(&pipes)?;
+    part_two(&pipes)?;
 
     Ok(())
 }
