@@ -26,7 +26,8 @@ fn solve(part: &str, races: &[Race]) -> Result<()> {
         .iter()
         .map(|race| race.ways_to_win())
         .collect::<Vec<usize>>();
-    let result = results.iter().fold(1, |acc, r| acc * r);
+
+    let result = results.iter().product::<usize>();
 
     println!("Part {}: {:?} -- {:?}", part, result, timer.elapsed());
     Ok(())
