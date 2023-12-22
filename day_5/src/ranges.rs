@@ -147,6 +147,8 @@ impl Input {
 }
 
 pub fn part_one(lines: &str) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let input = generator(lines);
     println!("{:#?}", &input);
     let result = input
@@ -156,11 +158,13 @@ pub fn part_one(lines: &str) -> Result<()> {
         .min()
         .unwrap();
 
-    println!("Part One: {}", result);
+    println!("Part One: {} -- {:?}", result, timer.elapsed());
     Ok(())
 }
 
 pub fn part_two(lines: &str) -> Result<()> {
+    let timer = std::time::Instant::now();
+
     let input = generator(lines);
 
     let result = input
@@ -177,6 +181,6 @@ pub fn part_two(lines: &str) -> Result<()> {
         .min()
         .unwrap();
 
-    println!("Part Two: {}", result);
+    println!("Part Two: {} -- {:?}", result, timer.elapsed());
     Ok(())
 }
