@@ -45,12 +45,12 @@ fn parse_input(input: &str) -> Result<Vec<Record>> {
 }
 
 fn solve(records: &Vec<Record>) -> Result<usize> {
-    let mut result = 0;
+    let result = 0;
     let mut pattern = Vec::new();
     let mut conditions = Vec::new();
     // Exact size is not too important as long as there's enough space.
     let mut broken: Vec<usize> = vec![0; 20];
-    let mut table: Vec<usize> = vec![0; 2000];
+    let _table: Vec<usize> = vec![0; 2000];
 
     for record in records {
         println!("Record: {}", record);
