@@ -45,9 +45,10 @@ fn process_grid(grid: &[&[u8]]) -> u32 {
     let mut row_results: Vec<u32> = Vec::new();
     let mut col_results: Vec<u32> = Vec::new();
 
-    for y in 0..grid.len() {
-        row_results.push(reduce(grid[y]));
+    for row in grid {
+        row_results.push(reduce(row));
     }
+
     // For each column
     for x in 0..grid[0].len() {
         // Calculate the value
