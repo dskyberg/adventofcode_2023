@@ -1,0 +1,14 @@
+[package]
+name = "day_15"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { workspace = true }
+regex = { workspace = true }
+lazy_static = { workspace = true }
+indexmap = "2.1.0"
