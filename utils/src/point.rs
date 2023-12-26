@@ -53,6 +53,14 @@ pub struct Point<T> {
     pub y: T,
 }
 
+impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive> Default
+    for Point<T>
+{
+    fn default() -> Self {
+        Self::origin()
+    }
+}
+
 impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive>
     Point<T>
 {
