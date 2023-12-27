@@ -42,6 +42,7 @@
 //!   assert!(point.is_ok());
 //!   assert_eq!(point.unwrap(), Point::<i32>::new(1, 2));
 
+use crate::Direction;
 use anyhow::anyhow;
 use num::Integer;
 use std::cmp::{max, min};
@@ -56,6 +57,7 @@ pub struct Point<T> {
 impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive> Default
     for Point<T>
 {
+    /// The default for Point is the origin
     fn default() -> Self {
         Self::origin()
     }
@@ -64,6 +66,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
 impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive>
     Point<T>
 {
+    /// Create a new point with the provied X and Y values.
     #[inline]
     pub fn new(x: T, y: T) -> Self {
         Self { x, y }
@@ -78,6 +81,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
         }
     }
 
+    /// returns the [Manhattan Distance](https://simple.wikipedia.org/wiki/Manhattan_distance) between two points.
     #[inline]
     pub fn manhattan_distance(&self, other: &Self) -> T {
         let x_diff = max(self.x, other.x) - min(self.x, other.x);
@@ -97,7 +101,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
         self.bounded(&Self::origin(), max)
     }
 
-    /// Returns the point left of self
+    /// Returns the point left of self - self.x - 1
     #[inline]
     pub fn left(&self) -> Self {
         Self {
@@ -106,6 +110,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
         }
     }
 
+    /// Returns the point right of self - self.x + 1
     #[inline]
     pub fn right(&self) -> Self {
         Self {
@@ -114,6 +119,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
         }
     }
 
+    /// Returns the point above self - self.y - 1
     #[inline]
     pub fn up(&self) -> Self {
         Self {
@@ -121,11 +127,24 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
             x: self.x,
         }
     }
+
+    /// Returns the point below self - self.y + 1
     #[inline]
     pub fn down(&self) -> Self {
         Self {
             y: self.y + T::one(),
             x: self.x,
+        }
+    }
+
+    /// Returns the point, stepping one point in the direction provided.
+    #[inline]
+    pub fn step(&self, direction: &Direction) -> Self {
+        match direction {
+            Direction::East => self.right(),
+            Direction::West => self.left(),
+            Direction::North => self.up(),
+            Direction::South => self.down(),
         }
     }
 }
