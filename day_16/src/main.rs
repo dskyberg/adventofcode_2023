@@ -1,6 +1,8 @@
+/// Thanks to https://github.com/clearlyMine for the hints on tracking visited cells
 use anyhow::Result;
 use lazy_static::lazy_static;
-use std::time::Instant;
+use std::{collections::HashSet, time::Instant};
+use utils::Direction;
 const GRID_SIZE: u32 = 110;
 
 lazy_static! {
@@ -44,207 +46,110 @@ impl TileType {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-struct Tile {
-    pub energized: bool,
-    pub type_: TileType,
-}
+fn shine_beam(
+    grid: &[Vec<TileType>],
+    initial_position: Point,
+    initial_direction: Direction,
+) -> Result<u32> {
+    let mut queue: Vec<(Point, Direction)> = vec![(initial_position, initial_direction)];
 
-impl Tile {
-    fn new(c: char) -> Self {
-        Self {
-            energized: false,
-            type_: TileType::from(c),
-        }
-    }
-}
+    let mut visited: HashSet<(Point, Direction)> = HashSet::new();
+    visited.insert((initial_position, initial_direction));
 
-struct Grid(Vec<Vec<Tile>>);
-
-impl Grid {
-    fn get_mut(&mut self, point: &Point) -> &mut Tile {
-        &mut self.0[point.y as usize][point.x as usize]
-    }
-
-    fn energized(&self) -> i32 {
-        self.0.iter().fold(0, |acc, row| {
-            acc + row
-                .iter()
-                .fold(0, |acc, t| if t.energized { acc + 1 } else { acc })
-        })
-    }
-
-    #[allow(dead_code)]
-    fn show_energized(&self) {
-        let mut s = String::new();
-        for row in &self.0 {
-            let mut left = String::new();
-            let mut right = String::new();
-            for tile in row {
-                left.push_str(&format!("{} ", tile.type_.to_char()));
-                if tile.energized {
-                    right.push_str("# ");
-                } else {
-                    right.push_str(". ");
-                }
-            }
-            s.push_str(&format!("{}  {}\n", left, right));
-        }
-        println!("{}", s);
-    }
-}
-
-#[derive(Clone, Debug, Default, PartialEq)]
-enum Direction {
-    North,
-    South,
-    #[default]
-    East,
-    West,
-}
-
-#[derive(Clone, Debug, Default)]
-struct Beam {
-    direction: Direction,
-    curr: Point,
-}
-
-impl Beam {
-    fn new(point: &Point, direction: &Direction) -> Self {
-        Self {
-            direction: direction.clone(),
-            curr: *point,
-        }
-    }
-    #[inline]
-    fn east_west(&self) -> bool {
-        self.direction == Direction::East || self.direction == Direction::West
-    }
-
-    #[inline]
-    fn north_south(&self) -> bool {
-        self.direction == Direction::North || self.direction == Direction::South
-    }
-
-    fn shine(&mut self, grid: &mut Grid) -> Result<()> {
-        let mut turn = false;
-        // Keep moving until either an edge or a barrier is hit
-        loop {
-            let tile = grid.get_mut(&self.curr);
-
-            if turn
-                && tile.energized
-                && !matches!(tile.type_, TileType::LeftRight | TileType::RightLeft)
-            {
-                // The last tile was a turn, and this tile is already engergized.
-                // we're in a loop.
-                return Ok(());
-            }
-            tile.energized = true;
-
-            // If the beam hits a splitter, launch 2 new beams and exit the loop
-            if self.east_west() && tile.type_ == TileType::VertSplit {
-                if self.curr.y > 0 {
-                    Beam::new(&self.curr.up(), &Direction::North).shine(grid)?;
-                }
-                if self.curr.y < (GRID_SIZE - 1) as i32 {
-                    Beam::new(&self.curr.down(), &Direction::South).shine(grid)?;
-                }
-                break;
-            }
-
-            if self.north_south() && tile.type_ == TileType::HorizSplit {
-                if self.curr.x > 0 {
-                    Beam::new(&self.curr.left(), &Direction::West).shine(grid)?;
-                }
-                if self.curr.x < (GRID_SIZE - 1) as i32 {
-                    Beam::new(&self.curr.right(), &Direction::East).shine(grid)?;
-                }
-                break;
-            }
-
-            // If the beam hits a mirror, change direction
-            if tile.type_ == TileType::LeftRight {
-                turn = true;
+    while let Some((position, direction)) = queue.pop() {
+        let new_directions: Vec<Direction> = match grid[position.y as usize][position.x as usize] {
+            TileType::LeftRight => match direction {
                 // \
-                match self.direction {
-                    Direction::North => self.direction = Direction::West,
-                    Direction::South => self.direction = Direction::East,
-                    Direction::East => self.direction = Direction::South,
-                    Direction::West => self.direction = Direction::North,
-                }
-            } else if tile.type_ == TileType::RightLeft {
-                turn = true;
+                Direction::East => vec![Direction::South],
+                Direction::West => vec![Direction::North],
+                Direction::North => vec![Direction::West],
+                Direction::South => vec![Direction::East],
+            },
+            TileType::RightLeft => match direction {
                 // /
-                match self.direction {
-                    Direction::North => self.direction = Direction::East,
-                    Direction::South => self.direction = Direction::West,
-                    Direction::East => self.direction = Direction::North,
-                    Direction::West => self.direction = Direction::South,
-                }
-            } else {
-                turn = false;
-            }
-
-            let next = self.next_point();
-            if next.is_none() {
-                return Ok(());
-            }
-            let next = next.unwrap();
-            self.curr = next;
-        }
-        Ok(())
-    }
-
-    fn next_point(&self) -> Option<Point> {
-        let p = match self.direction {
-            Direction::North => self.curr.up(),
-            Direction::South => self.curr.down(),
-            Direction::East => self.curr.right(),
-            Direction::West => self.curr.left(),
+                Direction::East => vec![Direction::North],
+                Direction::West => vec![Direction::South],
+                Direction::North => vec![Direction::East],
+                Direction::South => vec![Direction::West],
+            },
+            TileType::HorizSplit => match direction {
+                Direction::North | Direction::South => vec![Direction::East, Direction::West],
+                _ => vec![direction],
+            },
+            TileType::VertSplit => match direction {
+                Direction::East | Direction::West => vec![Direction::North, Direction::South],
+                _ => vec![direction],
+            },
+            TileType::Empty => vec![direction],
         };
 
-        // If the new point is outside the grid...
-        if !p.bounded_z(&GRID_BOUNDS) {
-            return None;
+        for direction in new_directions {
+            // Move to the next point, based on the direction
+            let new_position = position.step(direction);
+            // If the point is in bounds and hasn't been  visited...
+            if new_position.bounded_z(&GRID_BOUNDS) && !visited.contains(&(new_position, direction))
+            {
+                visited.insert((new_position, direction));
+                queue.push((new_position, direction));
+            }
         }
-        Some(p)
     }
+
+    let visited_points = visited.iter().map(|(p, _)| *p).collect::<HashSet<Point>>();
+    //show_energized(&grid, &visited_points);
+
+    Ok(visited_points.len() as u32)
 }
 
-fn part_one(input: &str) -> Result<()> {
+fn part_one(grid: &[Vec<TileType>]) -> Result<()> {
     let timer = Instant::now();
 
-    let mut grid = parse_input(input);
-    let mut beam = Beam::default();
-    beam.shine(&mut grid)?;
-    let result = grid.energized();
+    let position = Point::origin();
+    let direction = Direction::East;
 
-    //grid.show_energized();
+    let result = shine_beam(grid, position, direction)?;
 
     println!("Part One: {} -- {:?}", &result, timer.elapsed());
     Ok(())
 }
 
-fn part_two(_input: &str) -> Result<()> {
+fn part_two(grid: &[Vec<TileType>]) -> Result<()> {
     let timer = Instant::now();
-    let result = 0;
+    let mut result = 0;
 
+    for i in 0..GRID_SIZE as i32 {
+        // Any point on first row
+        result = std::cmp::max(
+            result,
+            shine_beam(grid, Point::new(i, 0), Direction::South)?,
+        );
+
+        // Any point on first col
+        result = std::cmp::max(result, shine_beam(grid, Point::new(0, i), Direction::East)?);
+    }
+
+    for i in (0..GRID_SIZE as i32).rev() {
+        // Any point on last row
+        result = std::cmp::max(
+            result,
+            shine_beam(grid, Point::new(i, 0), Direction::North)?,
+        );
+
+        // Any point on last col
+        result = std::cmp::max(result, shine_beam(grid, Point::new(0, i), Direction::West)?);
+    }
     println!("Part Two: {} -- {:?}", &result, timer.elapsed());
     Ok(())
 }
 
-fn parse_input(input: &str) -> Grid {
-    let grid: Vec<Vec<Tile>> = input
-        .lines()
-        .map(|line| line.chars().map(Tile::new).collect())
-        .collect();
-    Grid(grid)
-}
-
 fn main() -> Result<()> {
     let input = include_str!("../../data/day_16.txt");
-    part_one(input)?;
-    part_two(input)?;
+    let grid = input
+        .lines()
+        .map(|line| line.chars().map(TileType::from).collect::<Vec<TileType>>())
+        .collect::<Vec<Vec<TileType>>>();
+
+    part_one(&grid)?;
+    part_two(&grid)?;
     Ok(())
 }
