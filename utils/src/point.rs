@@ -101,7 +101,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
     #[inline]
     pub fn left(&self) -> Self {
         Self {
-            x: self.x - T::from_i32(1).unwrap(),
+            x: self.x - T::one(),
             y: self.y,
         }
     }
@@ -109,7 +109,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
     #[inline]
     pub fn right(&self) -> Self {
         Self {
-            x: self.x + T::from_i32(1).unwrap(),
+            x: self.x + T::one(),
             y: self.y,
         }
     }
@@ -117,14 +117,14 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
     #[inline]
     pub fn up(&self) -> Self {
         Self {
-            y: self.y - T::from_i32(1).unwrap(),
+            y: self.y - T::one(),
             x: self.x,
         }
     }
     #[inline]
     pub fn down(&self) -> Self {
         Self {
-            y: self.y + T::from_i32(1).unwrap(),
+            y: self.y + T::one(),
             x: self.x,
         }
     }
