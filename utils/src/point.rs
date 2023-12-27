@@ -47,7 +47,7 @@ use num::Integer;
 use std::cmp::{max, min};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Hash, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Point<T> {
     pub x: T,
     pub y: T,
