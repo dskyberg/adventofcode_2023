@@ -139,7 +139,7 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
 
     /// Returns the point, stepping one point in the direction provided.
     #[inline]
-    pub fn step(&self, direction: &Direction) -> Self {
+    pub fn step(&self, direction: Direction) -> Self {
         match direction {
             Direction::East => self.right(),
             Direction::West => self.left(),
