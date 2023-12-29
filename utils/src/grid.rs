@@ -16,7 +16,7 @@ impl<
         T: std::fmt::Debug + Sized + Send + Sync,
     > Grid<P, T>
 {
-    pub fn parse<F>(input: &str, convert: F) -> Result<Self>
+    pub fn parse_str<F>(input: &str, convert: F) -> Result<Self>
     where
         F: Fn(&str) -> Result<T>,
     {
@@ -38,6 +38,14 @@ impl<
             curr,
             direction,
         })
+    }
+
+    pub fn width(&self) -> P {
+        self.bounds.x
+    }
+
+    pub fn height(&self) -> P {
+        self.bounds.y
     }
 
     pub fn step(&mut self) -> Option<Point<P>> {
@@ -81,7 +89,7 @@ mod tests {
         let convert = |s: &str| s.parse::<u32>().map_err(|e| anyhow!("{}", e.to_string()));
         let input = r#"1,2,3,4,5
 6,7,8,9,10"#;
-        let result = Grid::<i32, u32>::parse(input, convert);
+        let result = Grid::<i32, u32>::parse_str(input, convert);
         assert!(result.is_ok());
         dbg!(result.unwrap());
     }
