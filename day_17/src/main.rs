@@ -1,10 +1,148 @@
+use std::collections::HashMap;
+
 use anyhow::Result;
+use utils::PriorityQueue;
 
-fn part_one(_puzzle_input: &str) -> Result<()> {
+type Point = utils::Point<i32>;
+type Grid = utils::Grid<i32, u32>;
+
+#[allow(dead_code)]
+fn breadth_first_search(grid: &mut Grid, goal: Point) -> Result<Vec<Point>> {
+    let mut frontier: Vec<Point> = Vec::with_capacity((grid.width() * grid.height()) as usize);
+    let mut came_from = HashMap::<Point, Option<Point>>::new();
+    let mut cost = HashMap::<Point, u32>::new();
+
+    frontier.push(grid.current());
+    came_from.insert(grid.current(), None);
+    cost.insert(grid.current(), 0);
+
+    while let Some(current) = frontier.pop() {
+        if current == goal {
+            break;
+        }
+        for point in grid.neighbors(&current, 3) {
+            came_from.entry(point).or_insert_with(|| {
+                frontier.push(point);
+                Some(current)
+            });
+        }
+    }
+    let path = extract_path(&came_from, goal);
+    display_grid(grid, &path);
+    Ok(path)
+}
+
+#[allow(dead_code)]
+fn dijkstra_search(grid: &mut Grid, goal: Point) -> Result<Vec<Point>> {
+    let mut frontier: PriorityQueue<u32, Point> =
+        PriorityQueue::with_capacity(true, (grid.width() * grid.height()) as usize);
+    let mut came_from = HashMap::<Point, Option<Point>>::new();
+    let mut cost_so_far = HashMap::<Point, u32>::new();
+
+    frontier.push(0, grid.current());
+    came_from.insert(grid.current(), None);
+    cost_so_far.insert(grid.current(), 0);
+
+    while let Some((_heat, current)) = frontier.pop() {
+        if current == goal {
+            break;
+        }
+        /*
+        for next in graph.neighbors(current):
+             new_cost = cost_so_far[current] + graph.cost(current, next)
+             if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost
+                frontier.put(next, priority)
+                came_from[next] = current
+        */
+        let current_cost = cost_so_far.get(&current).unwrap_or(&0).to_owned();
+        for next in grid.neighbors(&current, 1) {
+            let next_heat = grid.get(&next)?;
+            let new_cost = current_cost + next_heat;
+            let next_cost = cost_so_far.get(&next).unwrap_or(&0).to_owned();
+            if !cost_so_far.contains_key(&next) || new_cost < next_cost {
+                cost_so_far.insert(next, new_cost);
+                frontier.push(new_cost, next);
+                came_from.insert(next, Some(current));
+            }
+        }
+    }
+
+    let path = extract_path(&came_from, goal);
+    display_grid(grid, &path);
+    Ok(path)
+}
+
+fn extract_path(came_from: &HashMap<Point, Option<Point>>, goal: Point) -> Vec<Point> {
+    // Now walk backward
+    let mut path: Vec<Point> = Vec::new();
+    let mut next = &goal;
+    loop {
+        let Some(point) = came_from.get(next) else {
+            break;
+        };
+        let Some(point) = point else {
+            break;
+        };
+        path.push(*point);
+        next = point;
+    }
+    path
+}
+
+fn display_grid(grid: &Grid, path: &[Point]) {
+    let mut result = String::from("");
+
+    for (y, row) in grid.cells.iter().enumerate() {
+        let mut left = String::new();
+        let mut right = String::new();
+        for (x, heat) in row.iter().enumerate() {
+            let point = Point::from((x as i32, y as i32));
+            left.push_str(&format!("{}", heat));
+            if path.contains(&point) {
+                right.push('.');
+            } else {
+                right.push_str(&format!("{}", heat));
+            }
+        }
+        result.push_str(&format!("{}  {}\n", left, right));
+    }
+    println!("{}", result);
+}
+
+fn parse_input(puzzle_input: &str) -> Grid {
+    let cells = puzzle_input
+        .lines()
+        .map(|row| {
+            row.chars()
+                .map(|c| c.to_digit(10).unwrap())
+                .collect::<Vec<u32>>()
+        })
+        .collect::<Vec<Vec<u32>>>();
+    Grid::from_cells(cells)
+}
+
+fn part_one(puzzle_input: &str) -> Result<()> {
     let timer = std::time::Instant::now();
-    let result = 0;
+    let mut grid = parse_input(puzzle_input);
+    println!(
+        "Grid: {} - {} {},{}",
+        grid.current(),
+        grid.bounds(),
+        grid.width(),
+        grid.height()
+    );
 
-    println!("Part One: {}  -- {:?}", result, timer.elapsed());
+    let goal = Point::from((grid.width() - 1, grid.height() - 1));
+    let path = breadth_first_search(&mut grid, goal)?;
+
+    let _ = dijkstra_search(&mut grid, goal)?;
+    println!(
+        "Part One: {} -- {}",
+        path.len(),
+        timer.elapsed().as_millis()
+    );
     Ok(())
 }
 fn main() -> Result<()> {
