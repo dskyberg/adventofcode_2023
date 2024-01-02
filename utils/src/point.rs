@@ -43,7 +43,7 @@
 //!   assert_eq!(point.unwrap(), Point::<i32>::new(1, 2));
 
 use crate::Direction;
-use anyhow::anyhow;
+use anyhow::{anyhow, Result};
 use num::Integer;
 use std::cmp::{max, min};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
@@ -54,8 +54,18 @@ pub struct Point<T> {
     pub y: T,
 }
 
-impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::FromPrimitive> Default
-    for Point<T>
+impl<
+        T: Integer
+            + num::PrimInt
+            + PartialOrd
+            + Ord
+            + Eq
+            + Sized
+            + Send
+            + Sync
+            + Copy
+            + num::FromPrimitive,
+    > Default for Point<T>
 {
     /// The default for Point is the origin
     fn default() -> Self {
@@ -146,6 +156,24 @@ impl<T: Integer + PartialOrd + Ord + Eq + Sized + Send + Sync + Copy + num::From
             Direction::North => self.up(),
             Direction::South => self.down(),
         }
+    }
+}
+
+impl<T: Copy> Point<T> {
+    pub fn indexible(&self) -> Result<Point<usize>>
+    where
+        usize: std::convert::TryFrom<T>,
+    {
+        let x: usize = self
+            .x
+            .try_into()
+            .map_err(|_| anyhow!("Failed to convert x to usize"))?;
+        let y: usize = self
+            .y
+            .try_into()
+            .map_err(|_| anyhow!("Failed to convert y to usize"))?;
+
+        Ok(Point::<usize>::from((x, y)))
     }
 }
 
