@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use utils::PriorityQueue;
 
 type Point = utils::Point<i32>;
@@ -8,7 +8,7 @@ type Grid = utils::Grid<i32, u32>;
 
 #[allow(dead_code)]
 fn breadth_first_search(grid: &mut Grid, goal: Point) -> Result<Vec<Point>> {
-    let mut frontier: Vec<Point> = Vec::with_capacity((grid.width() * grid.height()) as usize);
+    let mut frontier: Vec<Point> = Vec::with_capacity(grid.width() * grid.height());
     let mut came_from = HashMap::<Point, Option<Point>>::new();
     let mut cost = HashMap::<Point, u32>::new();
 
@@ -35,7 +35,7 @@ fn breadth_first_search(grid: &mut Grid, goal: Point) -> Result<Vec<Point>> {
 #[allow(dead_code)]
 fn dijkstra_search(grid: &mut Grid, goal: Point) -> Result<Vec<Point>> {
     let mut frontier: PriorityQueue<u32, Point> =
-        PriorityQueue::with_capacity(true, (grid.width() * grid.height()) as usize);
+        PriorityQueue::with_capacity(true, grid.width() * grid.height());
     let mut came_from = HashMap::<Point, Option<Point>>::new();
     let mut cost_so_far = HashMap::<Point, u32>::new();
 
@@ -94,11 +94,12 @@ fn extract_path(came_from: &HashMap<Point, Option<Point>>, goal: Point) -> Vec<P
 fn display_grid(grid: &Grid, path: &[Point]) {
     let mut result = String::from("");
 
-    for (y, row) in grid.cells.iter().enumerate() {
+    for y in 0..grid.height() {
         let mut left = String::new();
         let mut right = String::new();
-        for (x, heat) in row.iter().enumerate() {
+        for x in 0..grid.width() {
             let point = Point::from((x as i32, y as i32));
+            let heat = grid.get_at(x, y).expect("WTFFFF");
             left.push_str(&format!("{}", heat));
             if path.contains(&point) {
                 right.push('.');
@@ -112,15 +113,8 @@ fn display_grid(grid: &Grid, path: &[Point]) {
 }
 
 fn parse_input(puzzle_input: &str) -> Grid {
-    let cells = puzzle_input
-        .lines()
-        .map(|row| {
-            row.chars()
-                .map(|c| c.to_digit(10).unwrap())
-                .collect::<Vec<u32>>()
-        })
-        .collect::<Vec<Vec<u32>>>();
-    Grid::from_cells(cells)
+    let convert = |c: char| c.to_digit(10).ok_or(anyhow!("Failed to convert"));
+    Grid::parse_undelim_str(puzzle_input, convert).unwrap()
 }
 
 fn part_one(puzzle_input: &str) -> Result<()> {
@@ -146,7 +140,20 @@ fn part_one(puzzle_input: &str) -> Result<()> {
     Ok(())
 }
 fn main() -> Result<()> {
-    let puzzle_input = include_str!("../../data/day_17.txt");
-    part_one(puzzle_input)?;
+    //let puzzle_input = include_str!("../day_17.txt");
+    part_one(PUZZLE_INPUT)?;
     Ok(())
 }
+const PUZZLE_INPUT: &str = r#"2413432311323
+3215453535623
+3255245654254
+3446585845452
+4546657867536
+1438598798454
+4457876987766
+3637877979653
+4654967986887
+4564679986453
+1224686865563
+2546548887735
+4322674655533"#;
