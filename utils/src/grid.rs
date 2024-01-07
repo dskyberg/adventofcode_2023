@@ -3,11 +3,11 @@ use anyhow::{anyhow, Result};
 
 #[derive(Debug)]
 pub struct Grid<P, T> {
-    width: u32,
-    height: u32,
+    width: usize,
+    height: usize,
     curr: Point<P>,
     pub direction: Direction,
-    pub cells: Vec<Vec<T>>,
+    pub cells: Vec<T>,
 }
 
 impl<
@@ -20,6 +20,19 @@ impl<
         Point::<P>::from((self.width - 1, self.height - 1))
     }
 
+    pub fn get_at(&self, x: usize, y: usize) -> Result<&T> {
+        if x >= self.width || y >= self.height {
+            return Err(anyhow!("Out of bounds: {},{}", x, y));
+        }
+        Ok(self.cells.get(y * self.height + x).expect("WTF?"))
+    }
+
+    pub fn get_at_mut(&mut self, x: usize, y: usize) -> Result<&mut T> {
+        if x >= self.width || y >= self.height {
+            return Err(anyhow!("Out of bounds: {},{}", x, y));
+        }
+        Ok(self.cells.get_mut(y * self.height + x).expect("WTF?"))
+    }
     /// Return a reference to the value at the given point
     /// If the point can't be used to index, or is not within the
     /// rid bounds, an error is returned.
@@ -27,38 +40,24 @@ impl<
     where
         usize: std::convert::TryFrom<P>,
     {
-        if !point.bounded_z(&self.bounds()) {
-            return Err(anyhow!("Point is not in bounds"));
-        }
+        // Will throw if x or y are less than 0
         let index = point.indexible()?;
 
         // Since the x,y values have already been verified to be within the
         // bounds of the grid, just expect val.
-        Ok(self
-            .cells
-            .get(index.y)
-            .expect("WTF?")
-            .get(index.x)
-            .expect("WTF AGAIN?"))
+        Ok(self.get_at(index.x, index.y).expect("WTF?"))
     }
 
     pub fn get_mut(&mut self, point: &Point<P>) -> Result<&mut T>
     where
         usize: std::convert::TryFrom<P>,
     {
-        if !point.bounded_z(&self.bounds()) {
-            return Err(anyhow!("Point is not in bounds"));
-        }
+        // Will throw if x or y are less than 0
         let index = point.indexible()?;
 
         // Since the x,y values have already been verified to be within the
         // bounds of the grid, just expect val.
-        Ok(self
-            .cells
-            .get_mut(index.y)
-            .expect("WTF?")
-            .get_mut(index.x)
-            .expect("WTF AGAIN?"))
+        Ok(self.get_at_mut(index.x, index.y).expect("WTF?"))
     }
 
     pub fn get_curr(&self) -> Result<&T>
@@ -68,9 +67,7 @@ impl<
         self.get(&self.curr)
     }
 
-    pub fn from_cells(cells: Vec<Vec<T>>) -> Self {
-        let width = cells[0].len() as u32;
-        let height = cells.len() as u32;
+    pub fn from_cells(cells: Vec<T>, width: usize, height: usize) -> Self {
         let curr = Point::<P>::origin();
         let direction = Direction::default();
         Self {
@@ -82,21 +79,31 @@ impl<
         }
     }
 
-    pub fn parse_str<F>(input: &str, convert: F) -> Result<Self>
+    /// Reduce a new line delimited set of  PATTERN delimited strings
+    /// to Vec<T>
+    /// Example:
+    /// ````
+    /// let input = "0,1,2,3,4\n5,6,7,8,9";
+    /// let convert = |s: &str| s.parse::<u32>().map_err(|e| e.into());
+    /// let grid = Grid::parse_undelim_str(input,convert).expect("oops");
+    /// ````
+    pub fn parse_str<F>(input: &str, pattern: &str, convert: F) -> Result<Self>
     where
         F: Fn(&str) -> Result<T>,
     {
-        let mut cells: Vec<Vec<T>> = Vec::new();
+        let mut cells: Vec<T> = Vec::new();
+        let mut width: usize = 0;
+        let mut height: usize = 0;
+
         for line in input.lines() {
-            let mut row: Vec<T> = Vec::new();
-            for s in line.split(',') {
+            height += 1;
+            width = 0;
+            for s in line.split(pattern) {
+                width += 1;
                 let t = convert(s)?;
-                row.push(t);
+                cells.push(t);
             }
-            cells.push(row);
         }
-        let width = cells[0].len() as u32;
-        let height = cells.len() as u32;
         let curr = Point::<P>::origin();
         let direction = Direction::default();
         Ok(Grid {
@@ -108,11 +115,46 @@ impl<
         })
     }
 
-    pub fn width(&self) -> u32 {
+    /// Reduce a new line delimited set of chars
+    /// to Vec<T>
+    /// Example:
+    /// ````
+    /// let input = "01234\n56789";
+    /// let convert = |c: char| c.to_digit(10).or(anyhow!("Failed to convert"));
+    /// let grid = Grid::parse_undelim_str(input,convert).expect("oops");
+    /// ````
+    pub fn parse_undelim_str<F>(input: &str, convert: F) -> Result<Self>
+    where
+        F: Fn(char) -> Result<T>,
+    {
+        let mut cells: Vec<T> = Vec::new();
+        let mut width: usize = 0;
+        let mut height: usize = 0;
+
+        for line in input.lines() {
+            height += 1;
+            width = 0;
+            for s in line.chars() {
+                width += 1;
+                let t = convert(s)?;
+                cells.push(t);
+            }
+        }
+        let curr = Point::<P>::origin();
+        let direction = Direction::default();
+        Ok(Grid {
+            width,
+            height,
+            cells,
+            curr,
+            direction,
+        })
+    }
+    pub fn width(&self) -> usize {
         self.width
     }
 
-    pub fn height(&self) -> u32 {
+    pub fn height(&self) -> usize {
         self.height
     }
 
@@ -219,13 +261,15 @@ mod tests {
 
     #[test]
     fn test_it() {
-        let convert = |s: &str| s.parse::<u32>().map_err(|e| anyhow!("{}", e.to_string()));
+        let convert = |s: &str| s.parse::<u32>().map_err(|e| e.into());
+        let pattern = ",";
         let input = r#"1,2,3,4,5
 6,7,8,9,10"#;
-        let result = Grid::<i32, u32>::parse_str(input, convert);
+        let result = Grid::<i32, u32>::parse_str(input, pattern, convert);
         assert!(result.is_ok());
         let mut grid = result.unwrap();
-        dbg!(&grid);
+        assert_eq!(grid.height(), 2);
+        assert_eq!(grid.width(), 5);
         println!("grid.get_curr(): {:?}", grid.get_curr().unwrap());
         grid.step();
         println!("grid.get_curr(): {:?}", grid.get_curr().unwrap());
