@@ -1,5 +1,5 @@
-use anyhow::Result;
-#[derive(Debug)]
+use anyhow::{anyhow, Result};
+#[derive(Debug, PartialEq)]
 struct Race {
     time: usize,
     record: usize,
@@ -34,8 +34,8 @@ fn solve(part: &str, races: &[Race]) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let races = generate_races("not test");
-
+    //    let races = generate_races("not test");
+    let races = parse_input(include_str!("../puzzle_input.txt"))?;
     solve("One", &races)?;
     let races = vec![Race {
         time: 60808676,
@@ -46,36 +46,35 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn generate_races(mode: &str) -> Vec<Race> {
-    match mode {
-        "test" => vec![
-            Race { time: 7, record: 9 },
-            Race {
-                time: 15,
-                record: 40,
-            },
-            Race {
-                time: 30,
-                record: 200,
-            },
-        ],
-        _ => vec![
-            Race {
-                time: 60,
-                record: 601,
-            },
-            Race {
-                time: 80,
-                record: 1163,
-            },
-            Race {
-                time: 86,
-                record: 1559,
-            },
-            Race {
-                time: 76,
-                record: 1300,
-            },
-        ],
+fn parse_input(puzzle_input: &str) -> Result<Vec<Race>> {
+    let mut times: Vec<usize> = Vec::new();
+    let mut distances: Vec<usize> = Vec::new();
+    for line in puzzle_input.lines() {
+        if let Some((category, s)) = line.split_once(':') {
+            match category {
+                "Time" => {
+                    times = s
+                        .split_whitespace()
+                        .map(|n| n.parse::<usize>().unwrap())
+                        .collect::<Vec<usize>>();
+                }
+                "Distance" => {
+                    distances = s
+                        .split_whitespace()
+                        .map(|n| n.parse::<usize>().unwrap())
+                        .collect::<Vec<usize>>();
+                }
+                _ => return Err(anyhow!("Unexpected category {}", category)),
+            };
+        } else {
+            println!("Hmmm... {}", line);
+        }
     }
+    let races: Vec<Race> = (0..times.len())
+        .map(|idx| Race {
+            time: times[idx],
+            record: distances[idx],
+        })
+        .collect();
+    Ok(races)
 }

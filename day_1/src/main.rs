@@ -70,7 +70,7 @@ fn replace_words(in_row: &str, words: &[Vec<char>]) -> Result<String> {
 }
 
 fn part_one() -> Result<()> {
-    let data_file = include_str!("../../data/day_1.txt");
+    let data_file = include_str!("../puzzle_input.txt");
     let data = data_file.split('\n').collect::<Vec<&str>>();
     let mut total: usize = 0;
     for row in data {
@@ -96,7 +96,7 @@ fn part_two() -> Result<()> {
         "eight".chars().collect::<Vec<char>>(),
         "nine".chars().collect::<Vec<char>>(),
     ];
-    let data_file = include_str!("../../data/day_1.txt");
+    let data_file = include_str!("../puzzle_input.txt");
     let data = data_file.split('\n').collect::<Vec<&str>>();
     let mut total: usize = 0;
     for orig in data {

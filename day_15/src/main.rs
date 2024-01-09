@@ -110,7 +110,7 @@ fn part_two(input: &str) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_15.txt");
+    let input = include_str!("../puzzle_input.txt");
     part_one(input)?;
     part_two(input)?;
     Ok(())

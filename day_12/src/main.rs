@@ -91,7 +91,7 @@ fn part_one(records: &Vec<Record>) -> Result<()> {
     Ok(())
 }
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_12.txt");
+    let input = include_str!("../puzzle_input.txt");
     let records = parse_input(input)?;
     part_one(&records)?;
 

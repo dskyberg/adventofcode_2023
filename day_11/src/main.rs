@@ -56,7 +56,7 @@ fn exec(part: &str, bytes: &[u8], expansion_factor: usize) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let bytes = include_bytes!("../../data/day_11.txt");
+    let bytes = include_bytes!("../puzzle_input.txt");
     exec("One", bytes, 2)?;
     exec("Two", bytes, 1_000_000)?;
     Ok(())

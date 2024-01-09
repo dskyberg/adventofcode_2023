@@ -155,7 +155,7 @@ fn parse_hands(input: &str, use_wilds: bool) -> Result<Vec<Hand>> {
 }
 
 fn main() -> Result<()> {
-    let lines = include_str!("../../data/day_7.txt");
+    let lines = include_str!("../puzzle_input.txt");
 
     eval(lines, "One")?;
     eval(lines, "Two")?;

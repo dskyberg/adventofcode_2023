@@ -2,34 +2,37 @@
 //! Generic MinHeap based PrioritiyQueue
 use std::collections::BinaryHeap;
 
+/// Key, Value wrapper for the PriorityQueue
 #[derive(Debug)]
-struct Wrapper<K: Ord, V> {
+pub struct Entry<K: Ord, V> {
+    /// Determines order direction to manage min heap vs max heap
     min: bool,
     key: K,
     value: V,
 }
 
-impl<K: Ord, V> Wrapper<K, V> {
+impl<K: Ord, V> Entry<K, V> {
     pub fn new(min: bool, key: K, value: V) -> Self {
         Self { min, key, value }
     }
 }
 
-impl<K: Ord, V> PartialEq for Wrapper<K, V> {
+impl<K: Ord, V> PartialEq for Entry<K, V> {
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
     }
 }
-impl<K: Ord, V> Eq for Wrapper<K, V> {}
 
-impl<K: Ord, V> PartialOrd for Wrapper<K, V> {
+impl<K: Ord, V> Eq for Entry<K, V> {}
+
+impl<K: Ord, V> PartialOrd for Entry<K, V> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<K: Ord, V> Ord for Wrapper<K, V> {
-    /// To implement a max heap, use self.key.cmp(other.key)
+impl<K: Ord, V> Ord for Entry<K, V> {
+    /// To implement a max heap, do self.key.cmp(other.key)
     /// To implement a min heap, reverse it.
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match self.min {
@@ -41,8 +44,9 @@ impl<K: Ord, V> Ord for Wrapper<K, V> {
 
 #[derive(Debug)]
 pub struct PriorityQueue<K: Ord, V> {
+    /// Determines order direction to manage min heap vs max heap
     min: bool,
-    heap: BinaryHeap<Wrapper<K, V>>,
+    heap: BinaryHeap<Entry<K, V>>,
 }
 
 impl<K: Ord, V> Default for PriorityQueue<K, V> {
@@ -58,7 +62,7 @@ impl<K: Ord, V> PriorityQueue<K, V> {
     pub fn new(min: bool) -> Self {
         Self {
             min,
-            heap: BinaryHeap::<Wrapper<K, V>>::new(),
+            heap: BinaryHeap::<Entry<K, V>>::new(),
         }
     }
     pub fn with_capacity(min: bool, capacity: usize) -> Self {
@@ -69,14 +73,38 @@ impl<K: Ord, V> PriorityQueue<K, V> {
     }
 
     pub fn push(&mut self, key: K, value: V) {
-        let wrapper = Wrapper::<K, V>::new(self.min, key, value);
-        self.heap.push(wrapper);
+        self.heap.push(Entry::<K, V>::new(self.min, key, value))
     }
+
     pub fn pop(&mut self) -> Option<(K, V)> {
-        let Some(wrapper) = self.heap.pop() else {
-            return None;
-        };
-        Some((wrapper.key, wrapper.value))
+        self.heap.pop().map(|entry| (entry.key, entry.value))
+    }
+
+    pub fn keys(&self) -> Vec<&K> {
+        self.heap.iter().map(|entry| &entry.key).collect()
+    }
+
+    pub fn values(&self) -> Vec<&V> {
+        self.heap.iter().map(|entry| &entry.value).collect()
+    }
+    pub fn entries(&self) -> Vec<(&K, &V)> {
+        self.heap
+            .iter()
+            .map(|entry| (&entry.key, &entry.value))
+            .collect()
+    }
+}
+
+/// Treat PriorityQueue like a BinaryHeap
+impl<K: Ord, V> std::ops::Deref for PriorityQueue<K, V> {
+    type Target = BinaryHeap<Entry<K, V>>;
+    fn deref(&self) -> &Self::Target {
+        &self.heap
+    }
+}
+impl<K: Ord, V> std::ops::DerefMut for PriorityQueue<K, V> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.heap
     }
 }
 
@@ -88,13 +116,31 @@ mod tests {
     fn test_it() {
         let min = true;
         let mut min_heap = PriorityQueue::<u32, u32>::new(min);
+
         min_heap.push(2, 0);
         min_heap.push(1, 1);
         min_heap.push(1, 3);
         min_heap.push(1, 2);
+
+        assert_eq!(min_heap.keys(), vec![&1u32, &1u32, &1u32, &2u32]);
+        assert_eq!(min_heap.values(), vec![&1u32, &2u32, &3u32, &0u32]);
+        assert_eq!(
+            min_heap.entries(),
+            vec![
+                (&1u32, &1u32),
+                (&1u32, &2u32),
+                (&1u32, &3u32),
+                (&2u32, &0u32)
+            ]
+        );
+
         assert_eq!(min_heap.pop(), Some((1, 1)));
         assert_eq!(min_heap.pop(), Some((1, 3)));
         assert_eq!(min_heap.pop(), Some((1, 2)));
         assert_eq!(min_heap.pop(), Some((2, 0)));
+
+        // By implementing Deref, we can treat the PiorityQueue like a BinaryHeap
+        min_heap.clear();
+        assert!(min_heap.is_empty());
     }
 }

@@ -70,7 +70,7 @@ fn part_two(nums: &[Vec<isize>]) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_9.txt");
+    let input = include_str!("../puzzle_input.txt");
     let nums = parse_input(input)?;
 
     part_one(&nums)?;

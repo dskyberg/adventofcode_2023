@@ -207,7 +207,7 @@ fn part_two(schematics: &Schematics) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let data = include_bytes!("../../data/day_3.txt");
+    let data = include_bytes!("../puzzle_input.txt");
     let schematics = read_schematic(data)?;
     part_one(&schematics)?;
     part_two(&schematics)?;

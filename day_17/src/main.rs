@@ -140,20 +140,17 @@ fn part_one(puzzle_input: &str) -> Result<()> {
     Ok(())
 }
 fn main() -> Result<()> {
-    //let puzzle_input = include_str!("../day_17.txt");
-    part_one(PUZZLE_INPUT)?;
+    let puzzle_input = std::fs::read_to_string("./puzzle_input.txt")?;
+    part_one(&puzzle_input)?;
     Ok(())
 }
-const PUZZLE_INPUT: &str = r#"2413432311323
-3215453535623
-3255245654254
-3446585845452
-4546657867536
-1438598798454
-4457876987766
-3637877979653
-4654967986887
-4564679986453
-1224686865563
-2546548887735
-4322674655533"#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_it() {
+        println!("This is a test");
+    }
+}

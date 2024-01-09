@@ -277,7 +277,7 @@ fn part_two(pipes: &Pipes) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_10.txt");
+    let input = include_str!("../puzzle_input.txt");
     let pipes = parse_input(input);
     part_one(&pipes)?;
     part_two(&pipes)?;
@@ -348,31 +348,5 @@ fn parse_input(input: &str) -> Pipes {
         max_y,
         map,
         start: start_coord,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_it() {
-        let input = include_str!("../../data/day_10.txt");
-        let pipes = parse_input(input);
-        let result = pipes.measure_path();
-        let area = pipes.find_area();
-        for row in pipes.map {
-            for tile in row {
-                if result.contains(&tile.point) {
-                    print!("{}", &tile.conns);
-                } else if area.contains(&tile.point) {
-                    print!("I");
-                } else {
-                    print!(" ");
-                }
-            }
-            println!();
-        }
-        println!("Area: {}", area.len());
     }
 }

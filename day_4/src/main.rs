@@ -112,7 +112,7 @@ fn parse_data(data: &str) -> Result<Vec<Card>> {
 }
 
 fn main() -> Result<()> {
-    let data = include_str!("../../data/day_4.txt");
+    let data = include_str!("../puzzle_input.txt");
     let cards = parse_data(data.trim())?;
 
     part_one(&cards)?;

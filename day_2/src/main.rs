@@ -160,7 +160,7 @@ fn part_two(games: &[Game]) -> Result<()> {
 
 use std::io::Write;
 fn main() -> Result<()> {
-    let lines = include_str!("../../data/day_2.txt")
+    let lines = include_str!("../puzzle_input.txt")
         .split('\n')
         .collect::<Vec<&str>>();
     let mut games: Vec<Game> = Vec::new();

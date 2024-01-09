@@ -143,7 +143,7 @@ fn part_two(grid: &[Vec<TileType>]) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_16.txt");
+    let input = include_str!("../puzzle_input.txt");
     let grid = input
         .lines()
         .map(|line| line.chars().map(TileType::from).collect::<Vec<TileType>>())

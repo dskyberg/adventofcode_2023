@@ -1,8 +1,9 @@
 [package]
 name = "day_1"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
+version = "0.1.0"
+edition = "2021"
+authors = ["David Skyberg <daviskyberg@gmail.com>"]
+license = "MIT"
 
 [dependencies]
-anyhow = { workspace = true }
+anyhow = "1.0.75"

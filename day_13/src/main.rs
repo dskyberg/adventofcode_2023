@@ -96,7 +96,7 @@ fn part_one(input: &str) -> Result<u32> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_13.txt");
+    let input = include_str!("../puzzle_input.txt");
     part_one(input)?;
     Ok(())
 }

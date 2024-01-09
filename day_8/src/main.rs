@@ -74,7 +74,7 @@ fn part_two(map: &Map) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("../../data/day_8.txt");
+    let input = include_str!("../puzzle_input.txt");
     let map = parse_input(input)?;
 
     part_one(&map)?;
