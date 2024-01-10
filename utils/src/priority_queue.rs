@@ -1,11 +1,11 @@
 //! PriorityQueue
-//! Generic MinHeap based PrioritiyQueue
+//! PrioritiyQueue for key, value pairs based on [BinaryHeap].
+//! [BinaryHeap] levearages [Ord] to manage min vs max heap.
 use std::collections::BinaryHeap;
 
 /// Key, Value wrapper for the PriorityQueue
 #[derive(Debug)]
 pub struct Entry<K: Ord, V> {
-    /// Determines order direction to manage min heap vs max heap
     min: bool,
     key: K,
     value: V,
@@ -44,7 +44,6 @@ impl<K: Ord, V> Ord for Entry<K, V> {
 
 #[derive(Debug)]
 pub struct PriorityQueue<K: Ord, V> {
-    /// Determines order direction to manage min heap vs max heap
     min: bool,
     heap: BinaryHeap<Entry<K, V>>,
 }
@@ -52,7 +51,7 @@ pub struct PriorityQueue<K: Ord, V> {
 impl<K: Ord, V> Default for PriorityQueue<K, V> {
     fn default() -> Self {
         Self {
-            min: false,
+            min: true,
             heap: BinaryHeap::new(),
         }
     }
